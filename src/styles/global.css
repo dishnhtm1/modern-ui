@@ -1,0 +1,32 @@
+/* src/styles/global.css */
+body {
+  font-family: 'Inter', sans-serif;
+  background-color: #f9fafb;
+  margin: 0;
+  padding: 0;
+  color: #1f2937;
+}
+
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+.sidebar {
+  width: 220px;
+  background-color: #1e293b;
+  height: 100vh;
+  color: white;
+  padding: 20px;
+  position: fixed;
+}
+
+.sidebar h2 {
+  margin-bottom: 30px;
+}
+
+.sidebar a {
+  display: block;
+  margin: 15px 0;
+  color: white;
+}

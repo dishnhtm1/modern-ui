@@ -1,0 +1,67 @@
+.dashboard-wrapper {
+  padding: 2rem;
+}
+
+.header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.metrics {
+  display: flex;
+  gap: 2rem;
+  margin-bottom: 2rem;
+}
+
+.metric {
+  background-color: white;
+  padding: 1.5rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+  flex: 1;
+  text-align: center;
+}
+
+.metric h3 {
+  margin: 0;
+  font-size: 1.5rem;
+  color: #1f2937;
+}
+
+.metric p {
+  margin-top: 0.5rem;
+  font-size: 1.25rem;
+  color: #4b5563;
+}
+
+.pipeline {
+  background-color: white;
+  padding: 1.5rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+}
+
+.pipeline h3 {
+  margin-bottom: 1rem;
+  font-size: 1.5rem;
+  color: #1f2937;
+}
+
+.pipeline table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.pipeline th,
+.pipeline td {
+  padding: 0.75rem;
+  border-bottom: 1px solid #eee;
+  text-align: left;
+}
+
+.pipeline th {
+  background-color: #f9fafb;
+  font-weight: 600;
+}

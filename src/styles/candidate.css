@@ -1,0 +1,66 @@
+.candidate-wrapper {
+  padding: 2rem;
+  font-family: 'Inter', sans-serif;
+  color: #333;
+}
+
+.header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.actions button {
+  margin-left: 0.5rem;
+  padding: 0.5rem 1rem;
+  border: none;
+  background-color: #3b82f6;
+  color: white;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.filters {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.filters select {
+  padding: 0.5rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  background-color: white;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+}
+
+th, td {
+  padding: 1rem;
+  border-bottom: 1px solid #eee;
+  text-align: left;
+}
+
+th {
+  background-color: #f9fafb;
+  font-weight: 600;
+}
+
+.status {
+  padding: 0.3rem 0.6rem;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  display: inline-block;
+}
+
+.status.new { background-color: #d1fae5; color: #065f46; }
+.status.in-progress { background-color: #fef3c7; color: #92400e; }
+.status.proposed { background-color: #e0f2fe; color: #0369a1; }
+.status.hired { background-color: #ede9fe; color: #5b21b6; }
