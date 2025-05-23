@@ -1,0 +1,49 @@
+.recruiter-wrapper {
+  padding: 2rem;
+}
+
+.metrics {
+  display: flex;
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.metric {
+  flex: 1;
+  background: #fff;
+  padding: 1rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  text-align: center;
+}
+
+.metric h3 {
+  margin: 0;
+  color: #1f2937;
+}
+
+.metric p {
+  font-size: 1.25rem;
+  color: #4b5563;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 1.5rem;
+}
+
+th, td {
+  border-bottom: 1px solid #eee;
+  padding: 0.75rem;
+  text-align: left;
+}
+
+form.form input,
+form.form button {
+  display: block;
+  margin-bottom: 1rem;
+  padding: 0.75rem;
+  width: 100%;
+  max-width: 400px;
+}

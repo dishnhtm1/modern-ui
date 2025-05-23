@@ -60,6 +60,37 @@ th {
   display: inline-block;
 }
 
+.form-box {
+  background: #fff;
+  padding: 1rem;
+  margin-bottom: 1.5rem;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.form-box h3 {
+  margin: 0 0 0.5rem;
+}
+
+.form-box input,
+.form-box select {
+  padding: 8px;
+  font-size: 14px;
+}
+
+.form-box button {
+  align-self: flex-start;
+  padding: 8px 16px;
+  background-color: #3b82f6;
+  border: none;
+  color: white;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
 .status.new { background-color: #d1fae5; color: #065f46; }
 .status.in-progress { background-color: #fef3c7; color: #92400e; }
 .status.proposed { background-color: #e0f2fe; color: #0369a1; }

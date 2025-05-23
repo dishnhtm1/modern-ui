@@ -1,0 +1,20 @@
+3. AI-Enhanced Recruitment Management System (RMS)
+
+
+Project Title: SmartHire: Recruitment Platform for IT Head-Hunters
+Overview:
+Design a Recruitment Management System that automates and enhances the recruitment
+workflow for IT head-hunting firms. The platform will manage the full recruitment lifecycle
+from job order creation to candidate placement while integrating AI for resume screening and
+interview feedback.
+Key Features:
+
+ Candidate sourcing and talent pool management
+
+ Job requisition and submission tracker
+
+ Interview scheduling and feedback collection
+
+ AI-based profile matching and shortlisting
+
+ Client dashboard with status updates and analytics

@@ -1,0 +1,95 @@
+/* Client Dashboard + Job Requests + Feedback styles */
+
+.client-wrapper {
+  padding: 2rem;
+  font-family: 'Inter', sans-serif;
+}
+
+.header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+
+.metrics {
+  display: flex;
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.metric {
+  background: #fff;
+  padding: 1.5rem;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  flex: 1;
+  text-align: center;
+}
+
+.metric h3 {
+  font-size: 1.3rem;
+  color: #333;
+  margin-bottom: 0.5rem;
+}
+
+.metric p {
+  font-size: 1.6rem;
+  color: #4f46e5;
+  font-weight: bold;
+}
+
+.pipeline {
+  background: #fff;
+  padding: 1.5rem;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.pipeline h3 {
+  font-size: 1.4rem;
+  margin-bottom: 1rem;
+  color: #1f2937;
+}
+
+.pipeline table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.pipeline th,
+.pipeline td {
+  padding: 12px;
+  text-align: left;
+  border-bottom: 1px solid #eee;
+}
+
+.pipeline th {
+  background: #f9fafb;
+  color: #555;
+  font-weight: 600;
+}
+
+.status {
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: white;
+}
+
+.status.open {
+  background-color: #22c55e;
+}
+
+.status.closed {
+  background-color: #ef4444;
+}
+
+.status.interviewing {
+  background-color: #3b82f6;
+}
+
+.status.pending {
+  background-color: #facc15;
+}
