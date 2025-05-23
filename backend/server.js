@@ -2,9 +2,10 @@ require("dotenv").config();
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
+
 const authRoutes = require("./routes/authRoutes");
 const candidateRoutes = require('./routes/candidateRoutes');
-
+const adminRoutes = require('./routes/adminRoutes'); // ✅ Added
 
 const app = express();
 app.use(express.json());
@@ -16,6 +17,7 @@ app.use(cors({
 
 app.use("/api/auth", authRoutes);
 app.use('/api/candidate', candidateRoutes);
+app.use('/api/admin', adminRoutes); // ✅ Registered admin route
 
 mongoose.connect(process.env.MONGO_URI)
   .then(() => {

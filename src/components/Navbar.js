@@ -1,15 +1,16 @@
-// src/components/Navbar.js
 import React from "react";
 import { Link, useNavigate } from "react-router-dom";
 
 export default function Navbar() {
   const navigate = useNavigate();
   const user = JSON.parse(localStorage.getItem("user"));
-  const role = user?.role;
+  const previewRole = localStorage.getItem("previewRole");
+  const role = previewRole || user?.role;
 
   const handleLogout = () => {
     localStorage.removeItem("user");
     localStorage.removeItem("token");
+    localStorage.removeItem("previewRole"); // ✅ clear preview mode too
     navigate("/login");
   };
 
@@ -45,12 +46,26 @@ export default function Navbar() {
           </>
         )}
 
-        {!role && (
+        {role === "admin" && (
           <>
-            <Link to="/">Home</Link>
+            <Link to="/dashboard/admin">Admin Dashboard</Link>
+            <Link to="/dashboard/admin/approvals">Approve Users</Link>
           </>
         )}
       </div>
+
+      {/* 🔁 Exit Preview Mode */}
+      {previewRole && (
+        <div style={{ marginTop: "1rem", fontSize: "0.9rem", color: "#999" }}>
+          <em>Previewing as: {previewRole}</em>
+          <button onClick={() => {
+            localStorage.removeItem("previewRole");
+            window.location.reload();
+          }} style={{ marginLeft: "10px", fontSize: "0.8rem" }}>
+            Exit Preview
+          </button>
+        </div>
+      )}
 
       {role && (
         <button className="logout-btn" onClick={handleLogout}>

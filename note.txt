@@ -18,3 +18,75 @@ Key Features:
  AI-based profile matching and shortlisting
 
  Client dashboard with status updates and analytics
+
+role connect 
+
+part1
+1. Candidate Flow
+Uploads:
+
+CV (File)
+
+LinkedIn URL
+
+These are stored and made available to Recruiters.
+
+2. Recruiter Flow
+Accesses uploaded candidate profiles.
+
+Downloads CV or uses LinkedIn URL.
+
+Uploads CV to AI Analyzer:
+
+Uses local AI (Ollama, Mistral, etc.) or backend API to generate a summary.
+
+Summary includes:
+
+Skills
+
+Experience
+
+Education
+
+Recommendations
+
+Sends AI Summary to:
+
+Client Feedback Section
+
+3. Client Flow
+Views candidate summary sent by recruiter.
+
+Leaves feedback or rating:
+
+“Good React skills”
+
+“Need stronger backend knowledge”
+
+This feedback is also shown back to Candidates.
+
++-----------------+        Upload CV/LinkedIn        +------------------+
+|    Candidate    | -------------------------------> |    Recruiter     |
+|  Upload Section |                                  |  Dashboard       |
++-----------------+                                  +--------+---------+
+                                                             |
+                                                             | AI Upload
+                                                             v
+                                                   +------------------+
+                                                   | AI Analysis Tool |
+                                                   |  (Mistral etc.)  |
+                                                   +--------+---------+
+                                                             |
+                                                 Send Summary |
+                                                             v
+                                                   +------------------+
+                                                   |     Client       |
+                                                   | Feedback Section |
+                                                   +--------+---------+
+                                                             |
+                                                 Submit Feedback
+                                                             v
++-----------------+                                  +------------------+
+|    Candidate    | <------------------------------  |    Recruiter     |
+| Feedback View   |                                  | Summary Viewer   |
++-----------------+                                  +------------------+

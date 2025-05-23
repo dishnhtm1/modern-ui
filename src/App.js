@@ -1,5 +1,6 @@
 // src/App.js
 import React from "react";
+
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Home from "./pages/Home";
 import Login from "./pages/Login";
@@ -24,9 +25,13 @@ import AssignedJobs from "./pages/recruiter/AssignedJobs";
 import ScheduleInterviews from "./pages/recruiter/ScheduleInterviews";
 import ReviewFeedback from "./pages/recruiter/ReviewFeedback";
 import CandidateUpload from "./pages/Candidate/CandidateUpload";
-
+import AdminDashboard from './pages/AdminDashboard';
 
 function App() {
+  const user = JSON.parse(localStorage.getItem("user"));
+  const previewRole = localStorage.getItem("previewRole");
+  const role = previewRole || user?.role;
+
   return (
     <Router>
       <Routes>
@@ -38,6 +43,11 @@ function App() {
         {/* Protected + nested layout */}
         <Route path="/dashboard" element={<ProtectedRoute><Layout /></ProtectedRoute>}>
           <Route index element={<Dashboard />} />
+          <Route
+                path="/dashboard/admin"
+                element={role === "admin" ? <AdminDashboard /> : <h2>Unauthorized</h2>}
+          />
+
           <Route path="interviews" element={<CandidateInterviews />} />
           <Route path="feedback" element={<CandidateFeedback />} />
           <Route path="client" element={<ClientDashboard />} />
@@ -57,5 +67,6 @@ function App() {
     </Router>
   );
 }
+
 
 export default App;

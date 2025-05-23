@@ -1,4 +1,3 @@
-// backend/controllers/authController.js
 const User = require("../models/User");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
@@ -13,7 +12,13 @@ exports.register = async (req, res) => {
 
     const hashed = await bcrypt.hash(password, 10);
 
-    const user = await User.create({ name, email, password: hashed, role });
+    const user = await User.create({
+      name,
+      email,
+      password: hashed,
+      role,
+      status: "pending" // ✅ all new users are pending
+    });
 
     res.status(201).json({ message: "User registered successfully" });
   } catch (err) {
@@ -33,20 +38,23 @@ exports.login = async (req, res) => {
     if (!isMatch)
       return res.status(400).json({ message: "Invalid credentials" });
 
+    // ✅ Prevent login if not approved
+    if (user.status !== 'approved')
+      return res.status(403).json({ message: "Your account is not approved yet" });
+
     const token = jwt.sign(
       { id: user._id, role: user.role },
       process.env.JWT_SECRET,
       { expiresIn: "1d" }
     );
 
-    // ✅ Return both token and user info
     res.status(200).json({
       token,
       user: {
         email: user.email,
         role: user.role,
-        name: user.name, // optional
-        id: user._id     // optional
+        name: user.name,
+        id: user._id
       }
     });
   } catch (err) {
@@ -54,4 +62,3 @@ exports.login = async (req, res) => {
     res.status(500).json({ message: "Login failed" });
   }
 };
-
