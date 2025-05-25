@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import '../../styles/candidate.css';
+
 import axios from 'axios';
 
 const CandidateUpload = () => {

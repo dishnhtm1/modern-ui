@@ -8,6 +8,7 @@
   text-align: center;
   padding: 100px 20px;
   min-height: 100vh;
+  /*background-image: url("/src/image/home\ 1.png");*/
   background: linear-gradient(to bottom right, #eef2ff, #e0e7ff);
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }

@@ -1,97 +1,87 @@
-.candidate-wrapper {
+/* Candidate.css */
+
+.dashboard-wrapper,
+.feedback-wrapper,
+.interview-wrapper {
   padding: 2rem;
-  font-family: 'Inter', sans-serif;
-  color: #333;
+  max-width: 800px;
+  margin: auto;
+  background-color: #f9fbfd;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  font-family: 'Segoe UI', sans-serif;
 }
 
-.header-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 1.5rem;
-}
-
-.actions button {
-  margin-left: 0.5rem;
-  padding: 0.5rem 1rem;
-  border: none;
-  background-color: #3b82f6;
-  color: white;
-  border-radius: 4px;
-  cursor: pointer;
-}
-
-.filters {
-  display: flex;
-  gap: 1rem;
+h2 {
+  font-size: 1.5rem;
   margin-bottom: 1rem;
+  color: #1a1a1a;
 }
 
-.filters select {
-  padding: 0.5rem;
-  border: 1px solid #ccc;
-  border-radius: 4px;
+ul {
+  list-style-type: disc;
+  padding-left: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+ul li {
+  margin-bottom: 0.5rem;
+  color: #333;
 }
 
 table {
   width: 100%;
   border-collapse: collapse;
-  background-color: white;
-  border-radius: 8px;
-  overflow: hidden;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+  margin-top: 1rem;
 }
 
 th, td {
-  padding: 1rem;
-  border-bottom: 1px solid #eee;
   text-align: left;
+  padding: 12px;
+  border-bottom: 1px solid #ddd;
 }
 
 th {
-  background-color: #f9fafb;
-  font-weight: 600;
+  background-color: #f1f3f6;
+  color: #333;
 }
 
-.status {
-  padding: 0.3rem 0.6rem;
-  border-radius: 4px;
-  font-size: 0.85rem;
-  display: inline-block;
-}
-
-.form-box {
-  background: #fff;
-  padding: 1rem;
-  margin-bottom: 1.5rem;
-  border: 1px solid #ddd;
-  border-radius: 6px;
+form {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  max-width: 600px;
+  margin: 2rem auto;
+  padding: 2rem;
+  border: 1px solid #e0e0e0;
+  border-radius: 10px;
+  background-color: #ffffff;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
 }
 
-.form-box h3 {
-  margin: 0 0 0.5rem;
+form h2 {
+  margin-bottom: 1rem;
+  font-size: 1.4rem;
 }
 
-.form-box input,
-.form-box select {
-  padding: 8px;
-  font-size: 14px;
+input[type="file"],
+input[type="url"] {
+  padding: 10px;
+  margin-bottom: 1rem;
+  border: 1px solid #ccc;
+  border-radius: 8px;
 }
 
-.form-box button {
-  align-self: flex-start;
-  padding: 8px 16px;
-  background-color: #3b82f6;
-  border: none;
+button[type="submit"] {
+  padding: 10px 20px;
+  background-color: #007bff;
   color: white;
-  border-radius: 4px;
+  border: none;
+  border-radius: 8px;
   cursor: pointer;
+  font-weight: bold;
+  transition: background-color 0.2s ease;
 }
 
-.status.new { background-color: #d1fae5; color: #065f46; }
-.status.in-progress { background-color: #fef3c7; color: #92400e; }
-.status.proposed { background-color: #e0f2fe; color: #0369a1; }
-.status.hired { background-color: #ede9fe; color: #5b21b6; }
+button[type="submit"]:hover {
+  background-color: #0056b3;
+}

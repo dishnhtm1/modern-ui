@@ -1,4 +1,7 @@
 import React from "react";
+import '../../styles/candidate.css';
+
+
 
 export default function CandidateDashboard() {
   return (
