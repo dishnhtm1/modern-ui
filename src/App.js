@@ -6,10 +6,9 @@ import Home from "./pages/Home";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
-import CandidatePool from "./pages/CandidatePool";
 
-import JobList from "./pages/JobList";
-import Settings from "./pages/Settings";
+
+
 
 import Layout from "./layout/Layout";
 import ProtectedRoute from "./routes/ProtectedRoute";
@@ -51,7 +50,7 @@ function App() {
           <Route path="interviews" element={<CandidateInterviews />} />
           <Route path="feedback" element={<CandidateFeedback />} />
           <Route path="client" element={<ClientDashboard />} />
-          <Route path="candidates" element={<CandidatePool />} />
+          
           <Route path="client-jobs" element={<ClientJobRequests />} />
           <Route path="client-feedback" element={<ClientFeedback />} />
           <Route path="recruiter" element={<RecruiterDashboard />} />
@@ -60,8 +59,7 @@ function App() {
           <Route path="schedule-interviews" element={<ScheduleInterviews />} />
           <Route path="review-feedback" element={<ReviewFeedback />} />
           <Route path="candidate/upload" element={<CandidateUpload />} />
-          <Route path="jobs" element={<JobList />} />
-          <Route path="settings" element={<Settings />} />
+          
         </Route>
       </Routes>
     </Router>

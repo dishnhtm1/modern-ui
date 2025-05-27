@@ -1,7 +1,8 @@
 import React from "react";
 import CandidateDashboard from "./Candidate/CandidateDashboard";
-import RecruiterDashboard from "./RecruiterDashboard";
-import ClientDashboard from "./ClientDashboard";
+import RecruiterDashboard from './recruiter/RecruiterDashboard';
+import ClientDashboard from './client/ClientDashboard';
+
 import AdminDashboard from "./AdminDashboard";
 
 export default function Dashboard() {

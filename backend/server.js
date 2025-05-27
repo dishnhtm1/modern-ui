@@ -6,7 +6,7 @@ const cors = require("cors");
 const authRoutes = require("./routes/authRoutes");
 const candidateRoutes = require('./routes/candidateRoutes');
 const adminRoutes = require('./routes/adminRoutes'); // ✅ Added
-
+const recruiterRoutes = require('./routes/recruiterRoutes');
 const app = express();
 app.use(express.json());
 
@@ -15,9 +15,11 @@ app.use(cors({
   credentials: true
 }));
 
+app.use('/uploads', express.static('uploads'));
+app.use('/api/recruiter', recruiterRoutes);
 app.use("/api/auth", authRoutes);
 app.use('/api/candidate', candidateRoutes);
-app.use('/api/admin', adminRoutes); // ✅ Registered admin route
+app.use('/api/admin', adminRoutes); 
 
 mongoose.connect(process.env.MONGO_URI)
   .then(() => {

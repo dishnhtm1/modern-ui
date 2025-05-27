@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const multer = require('multer');
-const { protect } = require('../middleware/authMiddleware');
+// const { protect } = require('../middleware/authMiddleware'); // ❌ comment this out temporarily
 const { uploadCandidateData } = require('../controllers/candidateController');
 
 // Multer config
@@ -11,6 +11,10 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ storage });
 
-router.post('/upload', protect, upload.single('cv'), uploadCandidateData);
+
+
+
+
+router.post('/upload', upload.single('cv'), uploadCandidateData);
 
 module.exports = router;

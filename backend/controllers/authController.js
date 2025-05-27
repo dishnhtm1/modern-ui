@@ -17,7 +17,7 @@ exports.register = async (req, res) => {
       email,
       password: hashed,
       role,
-      status: "pending" // ✅ all new users are pending
+      status: "pending" 
     });
 
     res.status(201).json({ message: "User registered successfully" });

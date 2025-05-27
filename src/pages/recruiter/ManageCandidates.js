@@ -23,6 +23,9 @@ export default function ManageCandidates() {
     fetchUploads();
   }, []);
 
+  // Debug log to see if uploads are received
+  console.log("CV Uploads:", uploads);
+
   return (
     <div className="recruiter-wrapper">
       <h2>📄 Manage Candidates</h2>
@@ -38,14 +41,22 @@ export default function ManageCandidates() {
         <tbody>
           {uploads.map((item) => (
             <tr key={item._id}>
-              <td>{item.user.email}</td>
+              <td>{item.user?.email || "N/A"}</td>
               <td>
-                <a href={`/${item.cv}`} target="_blank" rel="noopener noreferrer">
+                <a
+                  href={`http://localhost:5000/${item.cv.replace(/\\/g, "/")}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
                   View CV
                 </a>
               </td>
               <td>
-                <a href={item.linkedin} target="_blank" rel="noopener noreferrer">
+                <a
+                  href={item.linkedin}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
                   Profile
                 </a>
               </td>
