@@ -85,3 +85,26 @@ button[type="submit"] {
 button[type="submit"]:hover {
   background-color: #0056b3;
 }
+.feedback-wrapper {
+  padding: 20px;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.feedback-card {
+  background-color: #f9f9f9;
+  margin-bottom: 16px;
+  padding: 16px;
+  border-radius: 8px;
+  box-shadow: 0 0 6px rgba(0, 0, 0, 0.05);
+}
+
+.candidate-final-box {
+  margin-top: 12px;
+  background-color: #fffbe6;
+  padding: 12px;
+  border-left: 4px solid #ff9800;
+  border-radius: 5px;
+  font-size: 14px;
+  color: #333;
+}

@@ -21,7 +21,8 @@ const AdminDashboard = () => {
   const approveUser = async (userId) => {
     try {
       const token = localStorage.getItem("token");
-      await axios.put(`http://localhost:5000/api/admin/approve-user/${userId}`, {}, {
+      await axios.put(`http://localhost:5000/api/admin/approve/${userId}`, {}, {
+
         headers: { Authorization: `Bearer ${token}` }
       });
       setPendingUsers(pendingUsers.filter(user => user._id !== userId));

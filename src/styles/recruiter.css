@@ -47,3 +47,44 @@ form.form button {
   width: 100%;
   max-width: 400px;
 }
+.ai-feedback-row td {
+  background: #f9f9f9;
+  border-top: 1px solid #ccc;
+}
+
+.ai-preview-box {
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  background: #fff;
+}
+/* Green row for recruiter-accepted */
+.highlight-accepted {
+  background-color: #e6ffed;
+  border-left: 4px solid #4caf50;
+}
+
+.highlight-accepted td {
+  font-weight: 500;
+}
+
+/* Blue row for client-confirmed (final decision) */
+.highlight-final {
+  background-color: #e6f0ff;
+  border-left: 4px solid #2196f3;
+}
+
+.highlight-final td {
+  font-weight: 600;
+}
+
+/* Message box below final decision row */
+.final-feedback-box {
+  background-color: #f4f4f4;
+  padding: 12px;
+  border-left: 4px solid #2196f3;
+  margin-top: 10px;
+  border-radius: 5px;
+  font-size: 14px;
+  line-height: 1.5;
+}

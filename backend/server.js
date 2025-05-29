@@ -7,6 +7,7 @@ const authRoutes = require("./routes/authRoutes");
 const candidateRoutes = require('./routes/candidateRoutes');
 const adminRoutes = require('./routes/adminRoutes'); // ✅ Added
 const recruiterRoutes = require('./routes/recruiterRoutes');
+const clientRoutes = require('./routes/clientRoutes');
 const app = express();
 app.use(express.json());
 
@@ -20,6 +21,7 @@ app.use('/api/recruiter', recruiterRoutes);
 app.use("/api/auth", authRoutes);
 app.use('/api/candidate', candidateRoutes);
 app.use('/api/admin', adminRoutes); 
+app.use('/api/client', clientRoutes);
 
 mongoose.connect(process.env.MONGO_URI)
   .then(() => {

@@ -1,7 +1,10 @@
 const express = require('express');
 const router = express.Router();
 const multer = require('multer');
-// const { protect } = require('../middleware/authMiddleware'); // ❌ comment this out temporarily
+const { protect, authorizeRoles } = require('../middleware/authMiddleware');
+const Feedback = require('../models/Feedback');
+const User = require('../models/User'); // ✅ Add this
+const Job = require('../models/Job');   // ✅ And this
 const { uploadCandidateData } = require('../controllers/candidateController');
 
 // Multer config
@@ -11,10 +14,68 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ storage });
 
+// ✅ Upload CV
+router.post('/upload', protect, upload.single('cv'), uploadCandidateData);
 
+// ✅ Get interviews for the candidate
+router.get('/interviews', protect, authorizeRoles('candidate'), async (req, res) => {
+  try {
+    const candidateId = req.user.id;
 
+    const feedbacks = await Feedback.find({
+      candidateId,
+      status: 'accepted',
+      sentToCandidate: true
+    });
 
+    // Enrich with client email and job title
+    const enriched = await Promise.all(
+      feedbacks.map(async (fb) => {
+        const client = await User.findById(fb.clientId).select('email');
+        const job = await Job.findById(fb.jobId).select('title');
 
-router.post('/upload', upload.single('cv'), uploadCandidateData);
+        return {
+          ...fb._doc,
+          clientName: client?.email || 'Unknown Client',
+          jobTitle: job?.title || 'Unknown Job',
+        };
+      })
+    );
+
+    res.status(200).json(enriched);
+  } catch (err) {
+    console.error('❌ Error fetching interviews:', err);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// ✅ GET: Final Feedback for candidate
+router.get('/feedback', protect, authorizeRoles('candidate'), async (req, res) => {
+  try {
+    const feedbacks = await Feedback.find({
+      candidateId: req.user.id,
+      sentFinalFeedbackToCandidate: true
+    });
+
+    // Optional: enrich with job/client details
+    const enriched = await Promise.all(
+      feedbacks.map(async (fb) => {
+        const client = await User.findById(fb.clientId).select('email');
+        const job = await Job.findById(fb.jobId).select('title');
+
+        return {
+          ...fb._doc,
+          clientName: client?.email || 'Unknown Client',
+          jobTitle: job?.title || 'Unknown Job',
+        };
+      })
+    );
+
+    res.status(200).json(enriched);
+  } catch (err) {
+    console.error('❌ Error fetching final feedback:', err);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
 
 module.exports = router;

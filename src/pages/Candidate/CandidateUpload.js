@@ -5,32 +5,38 @@ import axios from 'axios';
 const CandidateUpload = () => {
   const [cv, setCv] = useState(null);
   const [linkedin, setLinkedin] = useState('');
+  const [loading, setLoading] = useState(false);
 
   const handleUpload = async (e) => {
     e.preventDefault();
+    setLoading(true);
 
     const formData = new FormData();
     formData.append('cv', cv);
     formData.append('linkedin', linkedin);
 
     const token = localStorage.getItem('token');
-    console.log("🔐 Token being sent:", token);         
-    console.log("📄 File selected:", cv);               
-    console.log("🔗 LinkedIn URL entered:", linkedin);  
+    console.log("🔐 Token being sent:", token);
+
 
     try {
-      const response = await axios.post('/api/candidate/upload', formData, {
+      const response = await axios.post('http://localhost:5000/api/candidate/upload', formData, {
+
         headers: {
           'Content-Type': 'multipart/form-data',
           Authorization: `Bearer ${token}`
         }
       });
 
-      console.log(" Upload response:", response.data);
       alert('Uploaded successfully');
+      setCv(null);
+      setLinkedin('');
+      document.querySelector('input[type="file"]').value = null;
     } catch (error) {
       console.error("❌ Upload failed:", error.response?.data || error.message);
       alert('Upload failed');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -50,7 +56,10 @@ const CandidateUpload = () => {
         onChange={e => setLinkedin(e.target.value)}
         required
       />
-      <button type="submit">Submit</button>
+      {cv && <p>Selected file: {cv.name}</p>}
+      <button type="submit" disabled={loading}>
+        {loading ? "Uploading..." : "Submit"}
+      </button>
     </form>
   );
 };

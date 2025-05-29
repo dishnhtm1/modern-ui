@@ -3,16 +3,18 @@ const CandidateUpload = require('../models/CandidateUpload');
 const uploadCandidateData = async (req, res) => {
   const { linkedin } = req.body;
 
-  console.log("📦 REQ.FILE:", req.file);       
-  console.log("🔗 LINKEDIN:", linkedin);       
-
   try {
     if (!req.file || !linkedin) {
       return res.status(400).json({ message: "Missing file or LinkedIn URL" });
     }
 
+    // ✅ FIX: check for req.user.id
+    if (!req.user || !req.user.id) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+
     const upload = new CandidateUpload({
-      user: req.user?.id || null, 
+      user: req.user.id,
       cv: req.file.path,
       linkedin
     });

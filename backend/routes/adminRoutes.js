@@ -15,18 +15,30 @@ router.get("/pending-users", protect, authorizeRoles("admin"), async (req, res) 
   }
 });
 
-// PUT /api/admin/approve-user/:id
-router.put("/approve-user/:id", protect, authorizeRoles("admin"), async (req, res) => {
+// PUT /api/admin/approve/:id
+router.put("/approve/:id", protect, authorizeRoles("admin"), async (req, res) => {
   try {
-    const user = await User.findByIdAndUpdate(
-      req.params.id,
-      { status: "approved" },
-      { new: true }
-    );
-    res.json(user);
+    const user = await User.findById(req.params.id);
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    user.status = "approved";
+    await user.save();
+
+    res.json({ message: "User approved successfully" });
   } catch (err) {
-    res.status(500).json({ message: "Approval failed" });
+    res.status(500).json({ message: "Server error" });
   }
 });
+// ✅ GET /api/admin/clients - get all approved clients (for recruiter dropdown)
+router.get("/clients", protect, authorizeRoles("admin", "recruiter"), async (req, res) => {
+  try {
+    const clients = await User.find({ role: "client", status: "approved" }).select("email _id");
+    res.json(clients);
+  } catch (err) {
+    console.error("❌ Error fetching clients:", err.message);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
 
 module.exports = router;
