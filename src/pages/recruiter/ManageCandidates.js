@@ -63,6 +63,7 @@ export default function ManageCandidates() {
   const handleAnalyze = async (item) => {
     const clientId = selectedClients[item._id];
     const jobId = selectedJobs[item._id];
+
     if (!clientId || !jobId) {
       message.warning("Please select both client and job.");
       return;
@@ -73,9 +74,15 @@ export default function ManageCandidates() {
       const jobTitle = job?.title || "Untitled";
 
       const res = await axios.post(
-        "/api/recruiter/analyze-preview",
-        { cvPath: item.cv, linkedin: item.linkedin },
-        { headers: { Authorization: `Bearer ${token}` } }
+        "/api/recruiter/analyze-summary",
+        {
+          cvPath: item.cv,
+          linkedinText: item.linkedin,
+          jobTitle,
+        },
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
       );
 
       const aiSummary = res.data.summary || "No summary";
@@ -95,8 +102,8 @@ export default function ManageCandidates() {
       setPreviews((prev) => ({ ...prev, [item._id]: previewData }));
       setPreviewModal({ visible: true, data: previewData });
     } catch (err) {
-      console.error("❌ Preview failed:", err);
-      message.error("Preview failed.");
+      console.error("❌ AI Analysis failed:", err);
+      message.error("❌ AI Analysis failed.");
     }
   };
 

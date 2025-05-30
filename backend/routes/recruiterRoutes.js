@@ -7,6 +7,11 @@ const CandidateUpload = require('../models/CandidateUpload');
 const Feedback = require('../models/Feedback');
 const Job = require('../models/Job');
 const User = require('../models/User');
+const multer = require('multer');
+const pdfParse = require('pdf-parse');
+const fs = require('fs');
+const upload = multer({ dest: 'uploads/' });
+const path = require('path');
 
 // ✅ GET all uploads - For recruiter dashboard
 router.get('/uploads', protect, recruiterOnly, async (req, res) => {
@@ -18,6 +23,52 @@ router.get('/uploads', protect, recruiterOnly, async (req, res) => {
     res.status(500).json({ message: 'Server error' });
   }
 });
+
+router.post('/analyze-summary', protect, recruiterOnly, async (req, res) => {
+  try {
+    const { cvPath, linkedinText = '', jobTitle = 'General Role' } = req.body;
+
+    if (!cvPath) {
+      return res.status(400).json({ message: "cvPath is required" });
+    }
+
+    const filePath = path.join(__dirname, '..', cvPath); // Adjust based on your project structure
+    const buffer = fs.readFileSync(filePath);
+    const pdfData = await pdfParse(buffer);
+    const cvText = pdfData.text;
+
+    const prompt = `
+Analyze the following candidate's resume and LinkedIn summary.
+Give summary, skills, and job-fit score out of 100.
+
+Resume:
+${cvText}
+
+LinkedIn:
+${linkedinText}
+`;
+
+    const geminiRes = await axios.post(
+      `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`,
+      {
+        contents: [
+          {
+            parts: [{ text: prompt }],
+          },
+        ],
+      }
+    );
+
+    const output = geminiRes.data.candidates?.[0]?.content?.parts?.[0]?.text || "No AI response";
+    const score = parseInt(output.match(/\\b(\\d{2,3})\\b/)?.[1] || "75");
+
+    res.json({ summary: output, matchScore: score });
+  } catch (err) {
+    console.error("❌ AI summary error:", err);
+    res.status(500).json({ message: "Failed to analyze resume" });
+  }
+});
+
 
 // ✅ Preview analysis before sending to client
 router.post('/analyze-preview', protect, recruiterOnly, async (req, res) => {
