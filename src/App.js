@@ -7,6 +7,8 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
 
+import 'antd/dist/reset.css'; // Ant Design v5+
+
 
 
 

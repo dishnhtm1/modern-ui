@@ -1,29 +1,56 @@
-// src/pages/recruiter/AssignedJobs.js
 import React from "react";
-import "../../styles/recruiter.css";
+import { Table, Typography, Layout } from "antd";
+import { PushpinOutlined } from "@ant-design/icons";
+
+const { Title } = Typography;
+const { Content } = Layout;
+
+const columns = [
+  {
+    title: "Position",
+    dataIndex: "position",
+    key: "position",
+  },
+  {
+    title: "Client",
+    dataIndex: "client",
+    key: "client",
+  },
+  {
+    title: "Deadline",
+    dataIndex: "deadline",
+    key: "deadline",
+  },
+  {
+    title: "Candidates",
+    dataIndex: "candidates",
+    key: "candidates",
+  },
+];
+
+const data = [
+  {
+    key: "1",
+    position: "Backend Developer",
+    client: "XYZ Corp",
+    deadline: "2025-06-10",
+    candidates: 4,
+  },
+  // You can add more jobs here dynamically from backend
+];
 
 export default function AssignedJobs() {
   return (
-    <div className="recruiter-wrapper">
-      <h2>📌 Assigned Job Requests</h2>
-      <table>
-        <thead>
-          <tr>
-            <th>Position</th>
-            <th>Client</th>
-            <th>Deadline</th>
-            <th>Candidates</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td>Backend Developer</td>
-            <td>XYZ Corp</td>
-            <td>2025-06-10</td>
-            <td>4</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
+    <Content style={{ padding: "24px", minHeight: "100vh", background: "#fff" }}>
+      <Title level={3}>
+        <PushpinOutlined /> Assigned Job Requests
+      </Title>
+      <Table
+        columns={columns}
+        dataSource={data}
+        pagination={{ pageSize: 5 }}
+        bordered
+      />
+    </Content>
   );
 }

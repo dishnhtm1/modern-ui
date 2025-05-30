@@ -1,33 +1,36 @@
 // src/pages/Login.js
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import "../styles/auth.css";
+import {
+  Form,
+  Input,
+  Button,
+  Typography,
+  Card,
+  Row,
+  Col,
+  message
+} from "antd";
+
+const { Title } = Typography;
 
 export default function Login() {
   const navigate = useNavigate();
-  const [form, setForm] = useState({
-    email: "",
-    password: ""
-  });
+  const [loading, setLoading] = useState(false);
 
-  const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-
+  const onFinish = async (values) => {
+    setLoading(true);
     try {
       const res = await fetch("http://localhost:5000/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form)
+        body: JSON.stringify(values),
       });
 
       const data = await res.json();
 
       if (!res.ok) {
-        alert(data.message || "Login failed");
+        message.error(data.message || "Login failed");
         return;
       }
 
@@ -35,35 +38,52 @@ export default function Login() {
       localStorage.setItem("token", data.token);
       localStorage.setItem("user", JSON.stringify(data.user));
 
+      message.success("Login successful");
       navigate("/dashboard");
     } catch (err) {
       console.error("Login error:", err);
-      alert("An error occurred during login.");
+      message.error("An error occurred during login.");
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <div className="auth-wrapper">
-      <h2>🔐 Login</h2>
-      <form className="auth-form" onSubmit={handleSubmit}>
-        <input
-          type="email"
-          name="email"
-          placeholder="Email"
-          value={form.email}
-          onChange={handleChange}
-          required
-        />
-        <input
-          type="password"
-          name="password"
-          placeholder="Password"
-          value={form.password}
-          onChange={handleChange}
-          required
-        />
-        <button type="submit">Login</button>
-      </form>
-    </div>
+    <Row justify="center" align="middle" style={{ minHeight: "100vh", background: "#f0f2f5" }}>
+      <Col>
+        <Card style={{ padding: "2rem", width: 350 }}>
+          <Title level={3} style={{ textAlign: "center" }}>🔐 Login</Title>
+
+          <Form layout="vertical" onFinish={onFinish}>
+            <Form.Item
+              label="Email"
+              name="email"
+              rules={[{ required: true, message: "Please enter your email" }]}
+            >
+              <Input type="email" placeholder="Email" />
+            </Form.Item>
+
+            <Form.Item
+              label="Password"
+              name="password"
+              rules={[{ required: true, message: "Please enter your password" }]}
+            >
+              <Input.Password placeholder="Password" />
+            </Form.Item>
+
+            <Form.Item>
+              <Button type="primary" htmlType="submit" block loading={loading}>
+                Login
+              </Button>
+            </Form.Item>
+
+            <Form.Item style={{ textAlign: "center" }}>
+              <span>Don't have an account? </span>
+              <a href="/register">Register</a>
+            </Form.Item>
+          </Form>
+        </Card>
+      </Col>
+    </Row>
   );
 }

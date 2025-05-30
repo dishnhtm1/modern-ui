@@ -1,42 +1,58 @@
 import React, { useState } from "react";
 import axios from "axios";
+import { Form, Input, Button, Card, Typography, message } from "antd";
+
+const { Title } = Typography;
+const { TextArea } = Input;
 
 export default function ClientJobForm() {
-  const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
+  const [form] = Form.useForm();
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const handleFinish = async (values) => {
     try {
+      setLoading(true);
       const token = localStorage.getItem("token");
-      await axios.post("/api/client/jobs", { title, description }, {
-        headers: { Authorization: `Bearer ${token}` }
+
+      await axios.post("/api/client/jobs", values, {
+        headers: { Authorization: `Bearer ${token}` },
       });
-      alert("✅ Job posted successfully!");
-      setTitle("");
-      setDescription("");
+
+      message.success("✅ Job posted successfully!");
+      form.resetFields();
     } catch (err) {
       console.error("❌ Failed to post job:", err);
-      alert("Error posting job.");
+      message.error("Error posting job.");
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <form onSubmit={handleSubmit}>
-      <h3>📝 Post a New Job</h3>
-      <input
-        type="text"
-        placeholder="Job Title"
-        value={title}
-        onChange={(e) => setTitle(e.target.value)}
-        required
-      />
-      <textarea
-        placeholder="Job Description"
-        value={description}
-        onChange={(e) => setDescription(e.target.value)}
-      />
-      <button type="submit">Post Job</button>
-    </form>
+    <Card title={<Title level={4}>📝 Post a New Job</Title>} style={{ maxWidth: 600, margin: "0 auto" }}>
+      <Form form={form} layout="vertical" onFinish={handleFinish}>
+        <Form.Item
+          label="Job Title"
+          name="title"
+          rules={[{ required: true, message: "Please enter the job title" }]}
+        >
+          <Input placeholder="Enter job title" />
+        </Form.Item>
+
+        <Form.Item
+          label="Job Description"
+          name="description"
+          rules={[{ required: true, message: "Please enter the job description" }]}
+        >
+          <TextArea rows={4} placeholder="Enter job description" />
+        </Form.Item>
+
+        <Form.Item>
+          <Button type="primary" htmlType="submit" loading={loading} block>
+            Post Job
+          </Button>
+        </Form.Item>
+      </Form>
+    </Card>
   );
 }

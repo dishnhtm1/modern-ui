@@ -1,5 +1,20 @@
 import React from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
+import { Layout, Menu, Button, Typography, Divider } from "antd";
+import {
+  DashboardOutlined,
+  FileTextOutlined,
+  UploadOutlined,
+  ScheduleOutlined,
+  UserOutlined,
+  LogoutOutlined,
+  CheckCircleOutlined,
+  TeamOutlined,
+  AppstoreOutlined,
+} from "@ant-design/icons";
+
+const { Sider } = Layout;
+const { Title } = Typography;
 
 export default function Navbar() {
   const navigate = useNavigate();
@@ -10,68 +25,141 @@ export default function Navbar() {
   const handleLogout = () => {
     localStorage.removeItem("user");
     localStorage.removeItem("token");
-    localStorage.removeItem("previewRole"); // ✅ clear preview mode too
+    localStorage.removeItem("previewRole");
     navigate("/login");
   };
 
+  const menuItems = [];
+
+  if (role === "candidate") {
+    menuItems.push(
+      {
+        key: "candidate-dashboard",
+        icon: <DashboardOutlined />,
+        label: <Link to="/dashboard">My Dashboard</Link>,
+      },
+      {
+        key: "interviews",
+        icon: <ScheduleOutlined />,
+        label: <Link to="/dashboard/interviews">My Interviews</Link>,
+      },
+      {
+        key: "feedback",
+        icon: <FileTextOutlined />,
+        label: <Link to="/dashboard/feedback">Feedback</Link>,
+      },
+      {
+        key: "upload-cv",
+        icon: <UploadOutlined />,
+        label: <Link to="/dashboard/candidate/upload">Upload CV</Link>,
+      }
+    );
+  }
+
+  if (role === "client") {
+    menuItems.push(
+      {
+        key: "client-dashboard",
+        icon: <DashboardOutlined />,
+        label: <Link to="/dashboard/client">Client Dashboard</Link>,
+      },
+      {
+        key: "client-jobs",
+        icon: <AppstoreOutlined />,
+        label: <Link to="/dashboard/client-jobs">My Job Requests</Link>,
+      },
+      {
+        key: "client-feedback",
+        icon: <FileTextOutlined />,
+        label: <Link to="/dashboard/client-feedback">Feedback</Link>,
+      }
+    );
+  }
+
+  if (role === "recruiter") {
+    menuItems.push(
+      {
+        key: "recruiter-dashboard",
+        icon: <DashboardOutlined />,
+        label: <Link to="/dashboard/recruiter">Recruiter Dashboard</Link>,
+      },
+      {
+        key: "manage-candidates",
+        icon: <TeamOutlined />,
+        label: <Link to="/dashboard/manage-candidates">Manage Candidates</Link>,
+      },
+      {
+        key: "assigned-jobs",
+        icon: <AppstoreOutlined />,
+        label: <Link to="/dashboard/assigned-jobs">Assigned Jobs</Link>,
+      },
+      {
+        key: "schedule-interviews",
+        icon: <ScheduleOutlined />,
+        label: <Link to="/dashboard/schedule-interviews">Schedule Interviews</Link>,
+      },
+      {
+        key: "review-feedback",
+        icon: <CheckCircleOutlined />,
+        label: <Link to="/dashboard/review-feedback">Review Feedback</Link>,
+      }
+    );
+  }
+
+  if (role === "admin") {
+    menuItems.push(
+      {
+        key: "admin-dashboard",
+        icon: <DashboardOutlined />,
+        label: <Link to="/dashboard/admin">Admin Dashboard</Link>,
+      },
+      {
+        key: "approvals",
+        icon: <CheckCircleOutlined />,
+        label: <Link to="/dashboard/admin/approvals">Approve Users</Link>,
+      }
+    );
+  }
+
   return (
-    <nav className="sidebar">
-      <h2>Smart Hire</h2>
-
-      <div className="nav-links">
-        {role === "candidate" && (
-          <>
-            <Link to="/dashboard">My Dashboard</Link>
-            <Link to="/dashboard/interviews">My Interviews</Link>
-            <Link to="/dashboard/feedback">Feedback</Link>
-            <Link to="/dashboard/candidate/upload">Upload CV</Link>
-          </>
-        )}
-
-        {role === "client" && (
-          <>
-            <Link to="/dashboard/client">Client Dashboard</Link>
-            <Link to="/dashboard/client-jobs">My Job Requests</Link>
-            <Link to="/dashboard/client-feedback">Feedback</Link>
-          </>
-        )}
-
-        {role === "recruiter" && (
-          <>
-            <Link to="/dashboard/recruiter">Recruiter Dashboard</Link>
-            <Link to="/dashboard/manage-candidates">Manage Candidates</Link>
-            <Link to="/dashboard/assigned-jobs">Assigned Jobs</Link>
-            <Link to="/dashboard/schedule-interviews">Schedule Interviews</Link>
-            <Link to="/dashboard/review-feedback">Review Feedback</Link>
-          </>
-        )}
-
-        {role === "admin" && (
-          <>
-            <Link to="/dashboard/admin">Admin Dashboard</Link>
-            <Link to="/dashboard/admin/approvals">Approve Users</Link>
-          </>
-        )}
+    <Sider width={250} style={{ minHeight: "100vh", background: "#fff" }}>
+      <div style={{ padding: "20px", textAlign: "center" }}>
+        <Title level={3} style={{ margin: 0 }}>Smart Hire</Title>
       </div>
 
-      {/* 🔁 Exit Preview Mode */}
+      <Menu mode="inline" items={menuItems} />
+
       {previewRole && (
-        <div style={{ marginTop: "1rem", fontSize: "0.9rem", color: "#999" }}>
+        <div style={{ padding: "10px", textAlign: "center", fontSize: 12, color: "#888" }}>
           <em>Previewing as: {previewRole}</em>
-          <button onClick={() => {
-            localStorage.removeItem("previewRole");
-            window.location.reload();
-          }} style={{ marginLeft: "10px", fontSize: "0.8rem" }}>
+          <br />
+          <Button
+            type="link"
+            size="small"
+            onClick={() => {
+              localStorage.removeItem("previewRole");
+              window.location.reload();
+            }}
+          >
             Exit Preview
-          </button>
+          </Button>
+          <Divider />
         </div>
       )}
 
       {role && (
-        <button className="logout-btn" onClick={handleLogout}>
-          Logout
-        </button>
+        <div style={{ textAlign: "center", padding: 16 }}>
+          <Button
+            type="primary"
+            icon={<LogoutOutlined />}
+            danger
+            block
+            onClick={handleLogout}
+          >
+            Logout
+          </Button>
+        </div>
       )}
-    </nav>
+    </Sider>
   );
 }

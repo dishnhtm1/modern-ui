@@ -1,15 +1,23 @@
 // src/layout/Layout.js
 import React from "react";
 import { Outlet } from "react-router-dom";
+import { Layout } from "antd";
 import Navbar from "../components/Navbar";
 
-export default function Layout() {
+const { Content } = Layout;
+
+export default function MainLayout() {
   return (
-    <div style={{ display: "flex" }}>
+    <Layout style={{ minHeight: "100vh" }}>
+      {/* Sidebar/Navbar */}
       <Navbar />
-      <main style={{ marginLeft: "220px", padding: "20px", width: "100%" }}>
-        <Outlet />
-      </main>
-    </div>
+
+      {/* Main content area */}
+      <Layout style={{ background: "#f0f2f5" }}>
+        <Content style={{ padding: "24px" }}>
+          <Outlet />
+        </Content>
+      </Layout>
+    </Layout>
   );
 }

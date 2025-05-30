@@ -1,21 +1,50 @@
 import React, { useEffect, useState } from "react";
+import {
+  Table,
+  Button,
+  Input,
+  Select,
+  DatePicker,
+  message,
+  Typography,
+  Space,
+  Divider,
+} from "antd";
 import axios from "axios";
-import "../../styles/client.css";
+import moment from "moment";
+
+const { Title } = Typography;
+const { Option } = Select;
+const { TextArea } = Input;
 
 export default function ClientFeedback() {
   const [feedbacks, setFeedbacks] = useState([]);
   const [responseInputs, setResponseInputs] = useState({});
-
+  const [loading, setLoading] = useState(false);
   const token = localStorage.getItem("token");
 
   const fetchFeedbacks = async () => {
     try {
+      setLoading(true);
       const res = await axios.get("/api/client/feedback", {
         headers: { Authorization: `Bearer ${token}` },
       });
       setFeedbacks(res.data);
+
+      // ✅ Initialize responseInputs with final decision and message
+      const initialInputs = {};
+      res.data.forEach((f) => {
+        initialInputs[f._id] = {
+          finalDecision: f.finalDecision || "",
+          finalMessage: f.finalMessage || "",
+        };
+      });
+      setResponseInputs(initialInputs);
     } catch (error) {
       console.error("❌ Failed to fetch feedbacks:", error);
+      message.error("Error fetching feedbacks");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -33,8 +62,7 @@ export default function ClientFeedback() {
     const { interviewDate, type } = responseInputs[id] || {};
 
     if (status === "accepted" && (!interviewDate || !type)) {
-      alert("Please provide interview date and type before submitting.");
-      return;
+      return message.warning("Please provide interview date and type.");
     }
 
     try {
@@ -50,39 +78,31 @@ export default function ClientFeedback() {
           headers: { Authorization: `Bearer ${token}` },
         }
       );
-      alert(`✅ Feedback ${status}`);
+      message.success(`Feedback ${status}`);
       fetchFeedbacks();
-      setResponseInputs((prev) => {
-        const copy = { ...prev };
-        delete copy[id];
-        return copy;
-      });
     } catch (err) {
       console.error("❌ Failed to update feedback:", err);
-      alert("❌ Error updating feedback.");
+      message.error("Error updating feedback.");
     }
   };
 
   const submitFinalDecision = async (id) => {
     const decision = responseInputs[id]?.finalDecision;
-    const message = responseInputs[id]?.finalMessage || "";
+    const finalMessage = responseInputs[id]?.finalMessage || "";
 
-    if (!decision) {
-      alert("Please select a final decision.");
-      return;
-    }
+    if (!decision) return message.warning("Please select a final decision");
 
     try {
       await axios.patch(
         `/api/client/final-decision/${id}`,
-        { status: decision, message },
+        { status: decision, message: finalMessage },
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      alert("✅ Final decision submitted.");
+      message.success("✅ Final decision submitted.");
       fetchFeedbacks();
     } catch (err) {
       console.error("❌ Final decision error:", err);
-      alert("Failed to submit final decision.");
+      message.error("Failed to submit final decision.");
     }
   };
 
@@ -90,161 +110,143 @@ export default function ClientFeedback() {
     fetchFeedbacks();
   }, []);
 
+  const columns = [
+    {
+      title: "Candidate",
+      dataIndex: "candidateName",
+      key: "candidateName",
+    },
+    {
+      title: "Job",
+      dataIndex: "jobTitle",
+      key: "jobTitle",
+    },
+    {
+      title: "Score",
+      dataIndex: "matchScore",
+      key: "matchScore",
+    },
+    {
+      title: "Summary",
+      dataIndex: "summary",
+      key: "summary",
+      render: (text) => text || "Not analyzed yet",
+    },
+    {
+      title: "Status",
+      dataIndex: "status",
+      key: "status",
+      render: (status) =>
+        !status || status === "pending"
+          ? "⏳ Pending"
+          : status === "accepted"
+          ? "✅ Accepted"
+          : "❌ Rejected",
+    },
+    {
+      title: "Action",
+      key: "action",
+      render: (_, item) =>
+        !item.status || item.status === "pending" ? (
+          <Button type="primary" onClick={() => handleResponseChange(item._id, "open", true)}>
+            Respond
+          </Button>
+        ) : (
+          <span>{item.status === "accepted" ? "✅ Accepted" : "❌ Rejected"}</span>
+        ),
+    },
+  ];
+
   return (
-    <div className="client-wrapper">
-      <div className="pipeline">
-        <h2>🧠 AI Analyzed Candidates - Review & Final Decision</h2>
-        <p className="feedback-description">
-          Review AI-analyzed candidates, schedule interviews, and submit your final hiring decision to the recruiter.
-        </p>
-        <table>
-          <thead>
-            <tr>
-              <th>Candidate</th>
-              <th>Job</th>
-              <th>Score</th>
-              <th>Summary</th>
-              <th>Status</th>
-              <th>Action</th>
-            </tr>
-          </thead>
-          <tbody>
-            {feedbacks.length > 0 ? (
-              feedbacks.map((item) => (
-                <React.Fragment key={item._id}>
-                  <tr>
-                    <td>{item.candidateName || "N/A"}</td>
-                    <td>{item.jobTitle || "Unspecified"}</td>
-                    <td>{item.matchScore || "N/A"}</td>
-                    <td>{item.summary || "Not analyzed yet"}</td>
-                    <td>{item.status || "Awaiting Response"}</td>
-                    <td>
-                      {!item.status || item.status === "pending" ? (
-                        <button
-                          onClick={() =>
-                            handleResponseChange(item._id, "open", true)
-                          }
-                        >
-                          Respond
-                        </button>
-                      ) : item.status === "accepted" ? (
-                        <span>✅ Accepted</span>
-                      ) : (
-                        <span>❌ Rejected</span>
-                      )}
-                    </td>
-                  </tr>
+    <div style={{ padding: 24 }}>
+      <Title level={3}>🧠 AI Analyzed Candidates - Review & Final Decision</Title>
+      <p style={{ marginBottom: 24 }}>
+        Review candidates, schedule interviews, and give your final decision to the recruiter.
+      </p>
 
-                  {/* 🔽 Inline row for response */}
-                  {responseInputs[item._id]?.open && (
-                    <tr>
-                      <td colSpan="6">
-                        <div className="response-box">
-                          <label>
-                            Interview Date:
-                            <input
-                              type="date"
-                              value={
-                                responseInputs[item._id]?.interviewDate || ""
-                              }
-                              onChange={(e) =>
-                                handleResponseChange(
-                                  item._id,
-                                  "interviewDate",
-                                  e.target.value
-                                )
-                              }
-                            />
-                          </label>
-                          <label>
-                            Interview Type:
-                            <input
-                              type="text"
-                              placeholder="e.g. Online / Onsite"
-                              value={responseInputs[item._id]?.type || ""}
-                              onChange={(e) =>
-                                handleResponseChange(
-                                  item._id,
-                                  "type",
-                                  e.target.value
-                                )
-                              }
-                            />
-                          </label>
-                          <button
-                            onClick={() => handleSubmit(item._id, "accepted")}
-                          >
-                            ✅ Accept & Schedule
-                          </button>
-                          <button
-                            onClick={() => handleSubmit(item._id, "rejected")}
-                          >
-                            ❌ Reject
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  )}
-
-                  {/* ✅ Final Decision Section */}
-                  {item.status === "accepted" && (
-                    <tr>
-                      <td colSpan="6">
-                        <div className="final-decision-section">
-                          <label>
-                            Final Decision:
-                            <select
-                              value={responseInputs[item._id]?.finalDecision || ""}
-                              onChange={(e) =>
-                                handleResponseChange(
-                                  item._id,
-                                  "finalDecision",
-                                  e.target.value
-                                )
-                              }
-                            >
-                              <option value="">-- Select --</option>
-                              <option value="confirmed">✅ Confirmed</option>
-                              <option value="rejected">❌ Rejected</option>
-                            </select>
-                          </label>
-
-                          <label style={{ marginLeft: "10px" }}>
-                            Message:
-                            <textarea
-                              placeholder="Enter final message to recruiter..."
-                              value={responseInputs[item._id]?.finalMessage || ""}
-                              onChange={(e) =>
-                                handleResponseChange(
-                                  item._id,
-                                  "finalMessage",
-                                  e.target.value
-                                )
-                              }
-                              style={{ width: "250px", marginLeft: "5px" }}
-                            />
-                          </label>
-
-                          <button
-                            onClick={() => submitFinalDecision(item._id)}
-                            style={{ marginLeft: "10px" }}
-                          >
-                            Submit Final Decision
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  )}
-                </React.Fragment>
-              ))
-            ) : (
-              <tr>
-                <td colSpan="6">No feedback available.</td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      </div>
+      <Table
+        columns={columns}
+        dataSource={feedbacks}
+        loading={loading}
+        rowKey="_id"
+        expandable={{
+          expandedRowRender: (record) => (
+            <div style={{ background: "#fafafa", padding: "20px" }}>
+              {!record.status || record.status === "pending" ? (
+                <>
+                  <Divider orientation="left">📅 Interview Scheduling</Divider>
+                  <Space direction="vertical">
+                    <DatePicker
+                      placeholder="Select interview date"
+                      onChange={(date, dateStr) =>
+                        handleResponseChange(record._id, "interviewDate", dateStr)
+                      }
+                    />
+                    <Input
+                      placeholder="Interview type (e.g., Online)"
+                      onChange={(e) =>
+                        handleResponseChange(record._id, "type", e.target.value)
+                      }
+                    />
+                    <Space>
+                      <Button
+                        type="primary"
+                        onClick={() => handleSubmit(record._id, "accepted")}
+                      >
+                        ✅ Accept & Schedule
+                      </Button>
+                      <Button
+                        danger
+                        onClick={() => handleSubmit(record._id, "rejected")}
+                      >
+                        ❌ Reject
+                      </Button>
+                    </Space>
+                  </Space>
+                </>
+              ) : record.finalDecision ? (
+                <>
+                  <Divider orientation="left">📌 Final Decision</Divider>
+                  <p><strong>Final Decision:</strong> {record.finalDecision === "confirmed" ? "✅ Confirmed" : "❌ Rejected"}</p>
+                  <p><strong>Message:</strong> {record.finalMessage || "No message provided."}</p>
+                </>
+              ) : (
+                <>
+                  <Divider orientation="left">📌 Final Decision</Divider>
+                  <Space direction="vertical" style={{ width: "100%" }}>
+                    <Select
+                      placeholder="Select decision"
+                      style={{ width: 250 }}
+                      value={responseInputs[record._id]?.finalDecision}
+                      onChange={(val) =>
+                        handleResponseChange(record._id, "finalDecision", val)
+                      }
+                    >
+                      <Option value="confirmed">✅ Confirmed</Option>
+                      <Option value="rejected">❌ Rejected</Option>
+                    </Select>
+                    <TextArea
+                      rows={3}
+                      placeholder="Message to recruiter"
+                      value={responseInputs[record._id]?.finalMessage}
+                      onChange={(e) =>
+                        handleResponseChange(record._id, "finalMessage", e.target.value)
+                      }
+                    />
+                    <Button
+                      type="primary"
+                      onClick={() => submitFinalDecision(record._id)}
+                    >
+                      Submit Final Decision
+                    </Button>
+                  </Space>
+                </>
+              )}
+            </div>
+          ),
+        }}
+        pagination={{ pageSize: 5 }}
+      />
     </div>
   );
 }

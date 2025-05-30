@@ -1,14 +1,31 @@
 import React, { useState } from 'react';
-import '../../styles/candidate.css';
+import {
+  Card,
+  Typography,
+  Form,
+  Input,
+  Upload,
+  Button,
+  message,
+  Space,
+} from 'antd';
+import { InboxOutlined, UploadOutlined } from '@ant-design/icons';
 import axios from 'axios';
 
-const CandidateUpload = () => {
+const { Title, Text } = Typography;
+const { Dragger } = Upload;
+
+export default function CandidateUpload() {
   const [cv, setCv] = useState(null);
   const [linkedin, setLinkedin] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const handleUpload = async (e) => {
-    e.preventDefault();
+  const handleUpload = async () => {
+    if (!cv || !linkedin) {
+      message.warning('Please upload your CV and enter LinkedIn URL');
+      return;
+    }
+
     setLoading(true);
 
     const formData = new FormData();
@@ -16,52 +33,95 @@ const CandidateUpload = () => {
     formData.append('linkedin', linkedin);
 
     const token = localStorage.getItem('token');
-    console.log("🔐 Token being sent:", token);
-
 
     try {
-      const response = await axios.post('http://localhost:5000/api/candidate/upload', formData, {
-
+      await axios.post('/api/candidate/upload', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
-          Authorization: `Bearer ${token}`
-        }
+          Authorization: `Bearer ${token}`,
+        },
       });
 
-      alert('Uploaded successfully');
+      message.success('✅ CV uploaded successfully!');
       setCv(null);
       setLinkedin('');
-      document.querySelector('input[type="file"]').value = null;
-    } catch (error) {
-      console.error("❌ Upload failed:", error.response?.data || error.message);
-      alert('Upload failed');
+    } catch (err) {
+      console.error('❌ Upload failed:', err);
+      message.error('❌ Failed to upload CV');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <form onSubmit={handleUpload} className="upload-form">
-      <h2>Upload CV & LinkedIn</h2>
-      <input
-        type="file"
-        onChange={e => setCv(e.target.files[0])}
-        accept=".pdf,.doc,.docx"
-        required
-      />
-      <input
-        type="url"
-        placeholder="LinkedIn Profile URL"
-        value={linkedin}
-        onChange={e => setLinkedin(e.target.value)}
-        required
-      />
-      {cv && <p>Selected file: {cv.name}</p>}
-      <button type="submit" disabled={loading}>
-        {loading ? "Uploading..." : "Submit"}
-      </button>
-    </form>
-  );
-};
+    <div
+      style={{
+        height: '100vh',
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        background: '#f0f2f5',
+      }}
+    >
+      <Card
+        title="📤 Upload Resume & LinkedIn"
+        bordered={false}
+        style={{ width: 600, boxShadow: '0 0 12px rgba(0,0,0,0.1)', borderRadius: 12 }}
+      >
+        <Space direction="vertical" style={{ width: '100%' }} size="large">
+          <Form layout="vertical" onFinish={handleUpload}>
+            <Form.Item label="Upload CV" required>
+              <Dragger
+                name="cv"
+                multiple={false}
+                beforeUpload={(file) => {
+                  setCv(file);
+                  return false;
+                }}
+                fileList={cv ? [cv] : []}
+                maxCount={1}
+                accept=".pdf,.doc,.docx"
+              >
+                <p className="ant-upload-drag-icon">
+                  <InboxOutlined />
+                </p>
+                <p className="ant-upload-text">Click or drag your CV here</p>
+                <p className="ant-upload-hint">Only PDF/DOC/DOCX files supported</p>
+              </Dragger>
+            </Form.Item>
 
-export default CandidateUpload;
+            <Form.Item
+              label="LinkedIn Profile URL"
+              required
+              rules={[{ type: 'url', message: 'Enter a valid URL' }]}
+            >
+              <Input
+                placeholder="https://linkedin.com/in/your-profile"
+                value={linkedin}
+                onChange={(e) => setLinkedin(e.target.value)}
+              />
+            </Form.Item>
+
+            <Form.Item>
+              <Button
+                type="primary"
+                htmlType="submit"
+                loading={loading}
+                icon={<UploadOutlined />}
+                block
+              >
+                {loading ? 'Uploading...' : 'Submit'}
+              </Button>
+            </Form.Item>
+          </Form>
+
+          {cv && (
+            <div style={{ textAlign: 'center' }}>
+              <Text type="success">✅ Selected file: {cv.name}</Text>
+            </div>
+          )}
+        </Space>
+      </Card>
+    </div>
+  );
+}

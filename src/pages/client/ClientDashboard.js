@@ -1,53 +1,79 @@
 import React from "react";
-import "../../styles/client.css";
+import { Card, Col, Row, Statistic, Table, Typography } from "antd";
+import {
+  FileTextOutlined,
+  ClockCircleOutlined,
+  MessageOutlined,
+} from "@ant-design/icons";
 
+const { Title } = Typography;
 
 export default function ClientDashboard() {
+  const jobStats = [
+    { title: "Total Job Requests", value: 12, icon: <FileTextOutlined /> },
+    { title: "Pending Interviews", value: 5, icon: <ClockCircleOutlined /> },
+    { title: "Feedback Submitted", value: 8, icon: <MessageOutlined /> },
+  ];
+
+  const columns = [
+    {
+      title: "Position",
+      dataIndex: "position",
+      key: "position",
+    },
+    {
+      title: "Status",
+      dataIndex: "status",
+      key: "status",
+    },
+    {
+      title: "Candidates",
+      dataIndex: "candidates",
+      key: "candidates",
+    },
+  ];
+
+  const jobData = [
+    {
+      key: "1",
+      position: "Frontend Developer",
+      status: "Open",
+      candidates: 6,
+    },
+    {
+      key: "2",
+      position: "Data Analyst",
+      status: "Interviewing",
+      candidates: 3,
+    },
+  ];
+
   return (
-    <div className="dashboard-wrapper">
-      <div className="header-row">
-        <h2>📊 Client Dashboard</h2>
-      </div>
+    <div style={{ padding: 24 }}>
+      <Title level={2}>📊 Client Dashboard</Title>
 
-      <div className="metrics">
-        <div className="metric">
-          <h3>Total Job Requests</h3>
-          <p>12</p>
-        </div>
-        <div className="metric">
-          <h3>Pending Interviews</h3>
-          <p>5</p>
-        </div>
-        <div className="metric">
-          <h3>Feedback Submitted</h3>
-          <p>8</p>
-        </div>
-      </div>
+      {/* Metrics Section */}
+      <Row gutter={16}>
+        {jobStats.map((item, index) => (
+          <Col span={8} key={index}>
+            <Card>
+              <Statistic
+                title={
+                  <span>
+                    {item.icon} {item.title}
+                  </span>
+                }
+                value={item.value}
+              />
+            </Card>
+          </Col>
+        ))}
+      </Row>
 
-      <div className="pipeline">
-        <h3>Recent Job Submissions</h3>
-        <table>
-          <thead>
-            <tr>
-              <th>Position</th>
-              <th>Status</th>
-              <th>Candidates</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>Frontend Developer</td>
-              <td>Open</td>
-              <td>6</td>
-            </tr>
-            <tr>
-              <td>Data Analyst</td>
-              <td>Interviewing</td>
-              <td>3</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
+      {/* Table Section */}
+      <Card title="📁 Recent Job Submissions" style={{ marginTop: 24 }}>
+        <Table columns={columns} dataSource={jobData} pagination={false} />
+      </Card>
     </div>
   );
 }

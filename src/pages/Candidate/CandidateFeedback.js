@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import "../../styles/candidate.css";
+import { List, Card, Typography, Result } from "antd";
+
+const { Title, Text } = Typography;
 
 export default function CandidateFeedback() {
   const [feedbacks, setFeedbacks] = useState([]);
@@ -14,7 +16,10 @@ export default function CandidateFeedback() {
             Authorization: `Bearer ${token}`,
           },
         });
-        const visibleFeedbacks = res.data.filter(f => f.sentFinalFeedbackToCandidate);
+
+        const visibleFeedbacks = res.data.filter(
+          (f) => f.sentFinalFeedbackToCandidate
+        );
         setFeedbacks(visibleFeedbacks);
       } catch (err) {
         console.error("❌ Failed to fetch candidate feedback:", err);
@@ -25,27 +30,52 @@ export default function CandidateFeedback() {
   }, []);
 
   return (
-    <div className="feedback-wrapper">
-      <h2>📩 Interview Feedback</h2>
-      {feedbacks.length === 0 ? (
-        <p>No feedback yet.</p>
-      ) : (
-        <ul>
-          {feedbacks.map((item) => (
-            <li key={item._id} className="feedback-card">
-              <p><strong>Job Title:</strong> {item.jobTitle || "N/A"}</p>
-              <p><strong>Status:</strong> {item.status === "accepted" ? "✅ Accepted" : item.status === "rejected" ? "❌ Rejected" : "⏳ Pending"}</p>
+    <div style={{ padding: "24px" }}>
+      <Title level={3}>📩 Interview Feedback</Title>
 
-              {/* ✅ Final feedback - shown only if recruiter sent it */}
-              {item.finalDecision && item.sentFinalFeedbackToCandidate && (
-                <div className="candidate-final-box">
-                  <p><strong>🎯 Final Decision:</strong> {item.finalDecision === "confirmed" ? "✅ Selected" : "❌ Not Selected"}</p>
-                  <p><strong>📝 Message from Client:</strong> {item.finalMessage || "No message provided."}</p>
-                </div>
-              )}
-            </li>
-          ))}
-        </ul>
+      {feedbacks.length === 0 ? (
+        <Result
+          status="info"
+          title="No feedback yet"
+          subTitle="Once a client confirms your interview decision, feedback will appear here."
+        />
+      ) : (
+        <List
+          grid={{ gutter: 16, column: 1 }}
+          dataSource={feedbacks}
+          renderItem={(item) => (
+            <List.Item>
+              <Card
+                title={
+                  <>
+                    <Text strong>Job Title:</Text> {item.jobTitle || "N/A"}
+                  </>
+                }
+                bordered
+              >
+                <p>
+                  <Text strong>Status:</Text>{" "}
+                  {item.status === "accepted" ? "✅ Accepted" : item.status === "rejected" ? "❌ Rejected" : "⏳ Pending"}
+                </p>
+
+                {item.finalDecision && item.sentFinalFeedbackToCandidate && (
+                  <div style={{ marginTop: "10px", background: "#fafafa", padding: "12px", borderRadius: "6px" }}>
+                    <p>
+                      <Text strong>🎯 Final Decision:</Text>{" "}
+                      {item.finalDecision === "confirmed"
+                        ? "✅ Selected"
+                        : "❌ Not Selected"}
+                    </p>
+                    <p>
+                      <Text strong>📝 Message from Client:</Text>{" "}
+                      {item.finalMessage || "No message provided."}
+                    </p>
+                  </div>
+                )}
+              </Card>
+            </List.Item>
+          )}
+        />
       )}
     </div>
   );

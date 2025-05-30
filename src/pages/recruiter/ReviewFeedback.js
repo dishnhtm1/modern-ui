@@ -1,6 +1,23 @@
 import React, { useEffect, useState } from "react";
+import '../../styles/recruiter.css';
+
 import axios from "axios";
-import "../../styles/recruiter.css";
+import {
+  Table,
+  Button,
+  Tag,
+  message,
+  Typography,
+  Space,
+  Card
+} from "antd";
+import {
+  SendOutlined,
+  CheckCircleOutlined
+} from "@ant-design/icons";
+
+
+const { Title, Paragraph } = Typography;
 
 export default function ReviewFeedback() {
   const [feedbacks, setFeedbacks] = useState([]);
@@ -17,109 +34,122 @@ export default function ReviewFeedback() {
     }
   };
 
+  const handleSendToCandidate = async (id) => {
+    try {
+      await axios.post(`/api/recruiter/send-to-candidate/${id}`, {}, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      message.success("✅ Feedback sent to candidate.");
+      fetchFeedbacks();
+    } catch (err) {
+      console.error("❌ Failed to send feedback:", err);
+      message.error("❌ Error sending feedback.");
+    }
+  };
+
   const handleSendFinalFeedback = async (id) => {
     try {
       await axios.post(`/api/recruiter/send-final-feedback/${id}`, {}, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      alert("✅ Final feedback sent.");
+      message.success("✅ Final feedback sent.");
       fetchFeedbacks();
     } catch (err) {
       console.error("❌ Failed to send final feedback:", err);
-      alert("❌ Error sending final feedback.");
+      message.error("❌ Error sending final feedback.");
     }
   };
-
 
   useEffect(() => {
     fetchFeedbacks();
   }, []);
 
+  const columns = [
+    {
+      title: "Candidate",
+      dataIndex: "candidateName",
+      key: "candidateName",
+    },
+    {
+      title: "Client",
+      dataIndex: "clientName",
+      key: "clientName",
+    },
+    {
+      title: "Status",
+      dataIndex: "status",
+      key: "status",
+      render: status => {
+        if (status === "accepted") return <Tag color="green">Accepted</Tag>;
+        if (status === "rejected") return <Tag color="red">Rejected</Tag>;
+        return <Tag color="orange">Pending</Tag>;
+      }
+    },
+    {
+      title: "Interview Type",
+      dataIndex: "interviewType",
+      key: "interviewType",
+      render: text => text || "-"
+    },
+    {
+      title: "Interview Date",
+      dataIndex: "interviewDate",
+      key: "interviewDate",
+      render: date => date ? new Date(date).toLocaleDateString() : "-"
+    },
+    {
+      title: "Action",
+      key: "action",
+      render: (_, record) => record.status === "accepted" ? (
+        record.sentToCandidate ? (
+          <Tag icon={<CheckCircleOutlined />} color="green">Sent</Tag>
+        ) : (
+          <Button icon={<SendOutlined />} type="primary" onClick={() => handleSendToCandidate(record._id)}>
+            Send to Candidate
+          </Button>
+        )
+      ) : "-"
+    }
+  ];
+
   return (
-    <div className="recruiter-wrapper">
-      <h2>📝 Review Client Feedback</h2>
-      <table>
-        <thead>
-          <tr>
-            <th>Candidate</th>
-            <th>Client</th>
-            <th>Status</th>
-            <th>Interview Type</th>
-            <th>Interview Date</th>
-            <th>Action</th>
-          </tr>
-        </thead>
-        <tbody>
-          {feedbacks.length > 0 ? (
-            feedbacks.map((item) => (
-              <React.Fragment key={item._id}>
-                <tr
-                  className={
-                    item.finalDecision === "confirmed"
-                      ? "highlight-final"
-                      : item.status === "accepted"
-                      ? "highlight-accepted"
-                      : ""
-                  }
-                >
-                  <td>{item.candidateName || "N/A"}</td>
-                  <td>{item.clientName || "N/A"}</td>
-                  <td>
-                    {item.status === "accepted"
-                      ? "✅ Accepted"
-                      : item.status === "rejected"
-                      ? "❌ Rejected"
-                      : "Pending"}
-                  </td>
-                  <td>{item.interviewType || "-"}</td>
-                  <td>
-                    {item.interviewDate
-                      ? new Date(item.interviewDate).toLocaleDateString()
-                      : "-"}
-                  </td>
-                  <td>
-                    {item.status === "accepted" ? (
-                      item.sentToCandidate ? (
-                        <span>✅ Sent</span>
-                      ) : (
-                        <button onClick={() => handleSendToCandidate(item._id)}>
-                          📤 Send to Candidate
-                        </button>
-                      )
-                    ) : (
-                      "-"
-                    )}
-                  </td>
-                </tr>
-
-                {/* ✅ Final Decision & Send Final Feedback */}
-                {item.finalDecision && (
-                  <tr>
-                    <td colSpan="6">
-                      <div className="final-feedback-box">
-                        <p><strong>Client Final Decision:</strong> {item.finalDecision === "confirmed" ? "✅ Confirmed" : "❌ Rejected"}</p>
-                        <p><strong>Message:</strong> {item.finalMessage || "No message provided."}</p>
-                        {!item.sentFinalFeedbackToCandidate ? (
-                          <button onClick={() => handleSendFinalFeedback(item._id)}>
-                            📤 Send Final Feedback to Candidate
-                          </button>
-                        ) : (
-                          <span>✅ Final feedback sent</span>
-                        )}
-                      </div>
-                    </td>
-                  </tr>
-
+    <Card style={{ margin: 20 }}>
+      <Title level={3}>📝 Review Client Feedback</Title>
+      <Table
+        dataSource={feedbacks}
+        columns={columns}
+        rowKey="_id"
+        rowClassName={(record) => {
+          if (record.finalDecision === "confirmed") return "row-confirmed";
+          if (record.finalDecision === "rejected") return "row-rejected";
+          return "";
+        }}
+        expandable={{
+          expandedRowRender: (record) =>
+            record.finalDecision && (
+              <div style={{ padding: "1rem", backgroundColor: "#f9f9f9" }}>
+                <Paragraph>
+                  <strong>Client Final Decision:</strong>{" "}
+                  {record.finalDecision === "confirmed" ? (
+                    <Tag color="green">✅ Confirmed</Tag>
+                  ) : (
+                    <Tag color="red">❌ Rejected</Tag>
+                  )}
+                </Paragraph>
+                <Paragraph>
+                  <strong>Message:</strong> {record.finalMessage || "No message provided."}
+                </Paragraph>
+                {record.sentFinalFeedbackToCandidate ? (
+                  <Tag icon={<CheckCircleOutlined />} color="green">Final feedback sent</Tag>
+                ) : (
+                  <Button icon={<SendOutlined />} type="default" onClick={() => handleSendFinalFeedback(record._id)}>
+                    Send Final Feedback
+                  </Button>
                 )}
-              </React.Fragment>
-            ))
-          ) : (
-            <tr>
-              <td colSpan="6">No feedback to review.</td>
-            </tr>
-          )}
-        </tbody>
-      </table>
-    </div>
+              </div>
+            )
+        }}
+      />
+    </Card>
   );
 }

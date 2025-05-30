@@ -1,70 +1,87 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import "../../styles/candidate.css";
+import { Table, Typography, Result } from "antd";
+
+const { Title } = Typography;
 
 export default function MyInterviewPage() {
   const [interviews, setInterviews] = useState([]);
   const token = localStorage.getItem("token");
 
-  const fetchInterviews = async () => {
-    try {
-      const res = await axios.get("/api/candidate/interviews", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      setInterviews(res.data);
-      console.log("✅ Interview Data:", res.data);
-    } catch (err) {
-      console.error("❌ Failed to load interviews:", err);
-    }
-  };
-
   useEffect(() => {
+    const fetchInterviews = async () => {
+      try {
+        const res = await axios.get("/api/candidate/interviews", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        setInterviews(res.data);
+        console.log("✅ Interview Data:", res.data);
+      } catch (err) {
+        console.error("❌ Failed to load interviews:", err);
+      }
+    };
+
     fetchInterviews();
   }, []);
 
-  return (
-    <div className="interview-wrapper">
-      <h2>🎯 My Interviews</h2>
-      <table>
-        <thead>
-          <tr>
-            <th>Client</th>
-            <th>Job</th>
-            <th>Interview Type</th>
-            <th>Date</th>
-            <th>Status</th>
-          </tr>
-        </thead>
-        <tbody>
-          {interviews && interviews.length > 0 ? (
-            interviews.map((item) => (
-              <tr key={item._id}>
-                <td>{item.clientName || "N/A"}</td>
-                <td>{item.jobTitle || "Unspecified"}</td>
-                <td>{item.interviewType || "-"}</td>
-                <td>
-                  {item.interviewDate
-                    ? new Date(item.interviewDate).toLocaleDateString()
-                    : "-"}
-                </td>
-                <td>
-                  {item.status?.toLowerCase() === "accepted"
-                    ? "✅ Scheduled"
-                    : item.status?.toLowerCase() === "rejected"
-                    ? "❌ Rejected"
-                    : "Pending"}
-                </td>
-              </tr>
-            ))
-          ) : (
-            <tr>
-              <td colSpan="5">No interviews scheduled yet.</td>
-            </tr>
-          )}
-        </tbody>
-      </table>
+  const columns = [
+    {
+      title: "Client",
+      dataIndex: "clientName",
+      key: "clientName",
+      render: (text) => text || "N/A",
+    },
+    {
+      title: "Job",
+      dataIndex: "jobTitle",
+      key: "jobTitle",
+      render: (text) => text || "Unspecified",
+    },
+    {
+      title: "Interview Type",
+      dataIndex: "interviewType",
+      key: "interviewType",
+      render: (text) => text || "-",
+    },
+    {
+      title: "Date",
+      dataIndex: "interviewDate",
+      key: "interviewDate",
+      render: (date) =>
+        date ? new Date(date).toLocaleDateString() : "-",
+    },
+    {
+      title: "Status",
+      dataIndex: "status",
+      key: "status",
+      render: (status) =>
+        status?.toLowerCase() === "accepted"
+          ? "✅ Scheduled"
+          : status?.toLowerCase() === "rejected"
+          ? "❌ Rejected"
+          : "⏳ Pending",
+    },
+  ];
 
-      
+  return (
+    <div style={{ padding: "24px" }}>
+      <Title level={3}>🎯 My Interviews</Title>
+
+      {interviews.length === 0 ? (
+        <Result
+          status="info"
+          title="No interviews scheduled yet"
+          subTitle="Once a recruiter or client schedules an interview, you'll see it here."
+        />
+      ) : (
+        <Table
+          columns={columns}
+          dataSource={interviews}
+          rowKey="_id"
+          pagination={{ pageSize: 5 }}
+          bordered
+        />
+      )}
     </div>
   );
 }

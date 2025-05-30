@@ -1,6 +1,11 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
+import { Table, Select, Button, Tag, Modal, Typography, message } from "antd";
+import moment from "moment";
 import "../../styles/recruiter.css";
+
+const { Option } = Select;
+const { Paragraph } = Typography;
 
 export default function ManageCandidates() {
   const [uploads, setUploads] = useState([]);
@@ -9,6 +14,7 @@ export default function ManageCandidates() {
   const [jobsByClient, setJobsByClient] = useState({});
   const [selectedJobs, setSelectedJobs] = useState({});
   const [previews, setPreviews] = useState({});
+  const [previewModal, setPreviewModal] = useState({ visible: false, data: null });
 
   const token = localStorage.getItem("token");
 
@@ -58,7 +64,7 @@ export default function ManageCandidates() {
     const clientId = selectedClients[item._id];
     const jobId = selectedJobs[item._id];
     if (!clientId || !jobId) {
-      alert("⚠️ Please select both client and job.");
+      message.warning("Please select both client and job.");
       return;
     }
 
@@ -75,22 +81,22 @@ export default function ManageCandidates() {
       const aiSummary = res.data.summary || "No summary";
       const score = res.data.matchScore || 75;
 
-      setPreviews((prev) => ({
-        ...prev,
-        [item._id]: {
-          summary: aiSummary,
-          matchScore: score,
-          candidateId: item._id,
-          candidateName: item.user?.email?.split("@")[0] || "Candidate",
-          candidateEmail: item.user?.email,
-          clientId,
-          jobId,
-          jobTitle,
-        },
-      }));
+      const previewData = {
+        summary: aiSummary,
+        matchScore: score,
+        candidateId: item._id,
+        candidateName: item.user?.email?.split("@")[0] || "Candidate",
+        candidateEmail: item.user?.email,
+        clientId,
+        jobId,
+        jobTitle,
+      };
+
+      setPreviews((prev) => ({ ...prev, [item._id]: previewData }));
+      setPreviewModal({ visible: true, data: previewData });
     } catch (err) {
       console.error("❌ Preview failed:", err);
-      alert("❌ Preview failed.");
+      message.error("Preview failed.");
     }
   };
 
@@ -99,19 +105,22 @@ export default function ManageCandidates() {
     if (!preview) return;
 
     try {
-      await axios.post("/api/recruiter/save-feedback", {
-
-        candidateEmail: preview.candidateEmail,  // 👈 Make sure this is set correctly
-        candidateName: preview.candidateName,
-        summary: preview.summary,
-        matchScore: preview.matchScore,
-        clientId: preview.clientId,
-        jobId: preview.jobId,
-        jobTitle: preview.jobTitle,
-      }, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      alert("✅ Feedback submitted to client.");
+      await axios.post(
+        "/api/recruiter/save-feedback",
+        {
+          candidateEmail: preview.candidateEmail,
+          candidateName: preview.candidateName,
+          summary: preview.summary,
+          matchScore: preview.matchScore,
+          clientId: preview.clientId,
+          jobId: preview.jobId,
+          jobTitle: preview.jobTitle,
+        },
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      message.success("✅ Feedback submitted to client.");
       setPreviews((prev) => {
         const updated = { ...prev };
         delete updated[candidateId];
@@ -120,7 +129,7 @@ export default function ManageCandidates() {
       fetchUploads();
     } catch (err) {
       console.error("❌ Save feedback failed:", err);
-      alert("❌ Save feedback failed.");
+      message.error("❌ Save feedback failed.");
     }
   };
 
@@ -129,116 +138,146 @@ export default function ManageCandidates() {
     fetchClients();
   }, []);
 
-  return (
-    <div className="recruiter-wrapper">
-      <h2>📄 Manage Candidates</h2>
-      <table>
-        <thead>
-          <tr>
-            <th>Email</th>
-            <th>CV</th>
-            <th>LinkedIn</th>
-            <th>Uploaded At</th>
-            <th>Client</th>
-            <th>Job</th>
-            <th>Feedback</th>
-            <th>Score</th>
-            <th>Status</th>
-            <th>Action</th>
-          </tr>
-        </thead>
-        <tbody>
-          {uploads.map((item) => (
-            <React.Fragment key={item._id}>
-              <tr>
-                <td>{item.user?.email || "N/A"}</td>
-                <td>
-                  <a
-                    href={`http://localhost:5000/${item.cv.replace(/\\/g, "/")}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    View CV
-                  </a>
-                </td>
-                <td>
-                  <a
-                    href={item.linkedin}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    Profile
-                  </a>
-                </td>
-                <td>{new Date(item.createdAt).toLocaleString()}</td>
-                <td>
-                  <select
-                    value={selectedClients[item._id] || ""}
-                    onChange={(e) =>
-                      handleClientChange(item._id, e.target.value)
-                    }
-                  >
-                    <option value="">-- Select Client --</option>
-                    {clients.map((client) => (
-                      <option key={client._id} value={client._id}>
-                        {client.email}
-                      </option>
-                    ))}
-                  </select>
-                </td>
-                <td>
-                  <select
-                    value={selectedJobs[item._id] || ""}
-                    onChange={(e) =>
-                      handleJobChange(item._id, e.target.value)
-                    }
-                  >
-                    <option value="">-- Select Job --</option>
-                    {(jobsByClient[selectedClients[item._id]] || []).map(
-                      (job) => (
-                        <option key={job._id} value={job._id}>
-                          {job.title}
-                        </option>
-                      )
-                    )}
-                  </select>
-                </td>
-                <td>{item.feedback || "Not yet analyzed"}</td>
-                <td>{item.matchScore || "-"}</td>
-                <td>
-                  {item.finalStatus === "confirmed" ? "✅ Confirmed" : "Pending"}
-                </td>
-                <td>
-                  {!item.feedback && (
-                    <button onClick={() => handleAnalyze(item)}>Analyze</button>
-                  )}
-                </td>
-              </tr>
-
-              {/* 🔽 Inline feedback preview below the row */}
-              {previews[item._id] && (
-                <tr className="ai-feedback-row">
-                  <td colSpan="10">
-                    <div className="ai-preview-box">
-                      <p><strong>AI Summary:</strong></p>
-                      <textarea
-                        value={previews[item._id].summary}
-                        readOnly
-                        rows={5}
-                        style={{ width: "100%" }}
-                      />
-                      <p><strong>Score:</strong> {previews[item._id].matchScore}</p>
-                      <button onClick={() => handleSubmitFeedback(item._id)}>
-                        ✅ Confirm & Send to Client
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              )}
-            </React.Fragment>
+  const columns = [
+    {
+      title: "Email",
+      dataIndex: ["user", "email"],
+    },
+    {
+      title: "CV",
+      render: (text, item) => (
+        <a
+          href={`http://localhost:5000/${item.cv.replace(/\\/g, "/")}`}
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          View CV
+        </a>
+      ),
+    },
+    {
+      title: "LinkedIn",
+      render: (text, item) => (
+        <a href={item.linkedin} target="_blank" rel="noopener noreferrer">
+          Profile
+        </a>
+      ),
+    },
+    {
+      title: "Uploaded",
+      render: (text, item) => moment(item.createdAt).format("YYYY-MM-DD HH:mm"),
+    },
+    {
+      title: "Client",
+      render: (text, item) => (
+        <Select
+          placeholder="Select Client"
+          style={{ width: 150 }}
+          value={selectedClients[item._id] || undefined}
+          onChange={(val) => handleClientChange(item._id, val)}
+        >
+          {clients.map((client) => (
+            <Option key={client._id} value={client._id}>
+              {client.email}
+            </Option>
           ))}
-        </tbody>
-      </table>
-    </div>
+        </Select>
+      ),
+    },
+    {
+      title: "Job",
+      render: (text, item) => (
+        <Select
+          placeholder="Select Job"
+          style={{ width: 150 }}
+          value={selectedJobs[item._id] || undefined}
+          onChange={(val) => handleJobChange(item._id, val)}
+        >
+          {(jobsByClient[selectedClients[item._id]] || []).map((job) => (
+            <Option key={job._id} value={job._id}>
+              {job.title}
+            </Option>
+          ))}
+        </Select>
+      ),
+    },
+    {
+      title: "Feedback",
+      dataIndex: "feedback",
+      render: (text) => text || "Not yet analyzed",
+    },
+    {
+      title: "Score",
+      dataIndex: "matchScore",
+      render: (score) => score || "-",
+    },
+    {
+      title: "Status",
+      render: (text, item) =>
+        item.finalStatus === "confirmed" ? (
+          <Tag color="green">Confirmed</Tag>
+        ) : (
+          <Tag color="orange">Pending</Tag>
+        ),
+    },
+    {
+      title: "Action",
+      render: (text, item) =>
+        !item.feedback ? (
+          <Button onClick={() => handleAnalyze(item)} type="primary">
+            Analyze
+          </Button>
+        ) : (
+          <Tag color="blue">Analyzed</Tag>
+        ),
+    },
+  ];
+
+  return (
+    <>
+      <h2>📄 Manage Candidates</h2>
+      <Table
+        rowKey="_id"
+        dataSource={uploads}
+        columns={columns}
+        pagination={{ pageSize: 5 }}
+      />
+
+      <Modal
+        title="AI Feedback Preview"
+        visible={previewModal.visible}
+        onCancel={() => setPreviewModal({ visible: false, data: null })}
+        onOk={() => {
+          handleSubmitFeedback(previewModal.data.candidateId);
+          setPreviewModal({ visible: false, data: null });
+        }}
+        okText="✅ Confirm & Send"
+        cancelText="Cancel"
+      >
+        {previewModal.data && (
+          <div>
+            <Paragraph>
+              <strong>Candidate:</strong> {previewModal.data.candidateName}
+            </Paragraph>
+            <Paragraph>
+              <strong>Job:</strong> {previewModal.data.jobTitle}
+            </Paragraph>
+            <Paragraph>
+              <strong>Match Score:</strong> {previewModal.data.matchScore}
+            </Paragraph>
+            <Paragraph>
+              <strong>Summary:</strong>
+              <br />
+              <textarea
+                value={previewModal.data.summary}
+                readOnly
+                rows={5}
+                style={{ width: "100%" }}
+              />
+            </Paragraph>
+          </div>
+        )}
+      </Modal>
+    </>
   );
 }
