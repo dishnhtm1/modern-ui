@@ -4,6 +4,10 @@ const candidateUploadSchema = new mongoose.Schema({
   user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
   cv: { type: String, required: true },
   linkedin: { type: String, required: true },
+  linkedinText: { type: String, required: true },clientId: {
+  type: mongoose.Schema.Types.ObjectId,
+  ref: 'User', // assuming clients are in User collection
+  required: true},
   jobMatched: { type: mongoose.Schema.Types.ObjectId, ref: 'JobRequest' },
   feedback: String,
   matchScore: Number,

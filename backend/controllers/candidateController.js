@@ -1,14 +1,14 @@
+// ✅ candidateController.js (Backend)
 const CandidateUpload = require('../models/CandidateUpload');
 
 const uploadCandidateData = async (req, res) => {
-  const { linkedin } = req.body;
+  const { linkedin, linkedinText, clientId } = req.body;
 
   try {
-    if (!req.file || !linkedin) {
-      return res.status(400).json({ message: "Missing file or LinkedIn URL" });
+    if (!req.file || !linkedin || !linkedinText || !clientId) {
+      return res.status(400).json({ message: "Missing required fields" });
     }
 
-    // ✅ FIX: check for req.user.id
     if (!req.user || !req.user.id) {
       return res.status(401).json({ message: "Unauthorized" });
     }
@@ -16,7 +16,9 @@ const uploadCandidateData = async (req, res) => {
     const upload = new CandidateUpload({
       user: req.user.id,
       cv: req.file.path,
-      linkedin
+      linkedin,
+      linkedinText,
+      clientId
     });
 
     await upload.save();

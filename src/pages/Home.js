@@ -1,25 +1,22 @@
-// src/pages/Home.js
-import React from "react";
-import { Link } from "react-router-dom";
-import { Typography, Button, Row, Col, Card } from "antd";
+import React from 'react';
+import { Typography, Button } from 'antd';
+import './Home.css'; // custom CSS for background
 
 const { Title, Paragraph } = Typography;
 
 export default function Home() {
   return (
-    <Row justify="center" align="middle" style={{ minHeight: "100vh", background: "#f0f2f5" }}>
-      <Col>
-        <Card bordered style={{ padding: "2rem", textAlign: "center", width: 350 }}>
-          <Title level={2}>Welcome to SmartHire</Title>
-          <Paragraph>Please login or register to continue.</Paragraph>
-          <Button type="primary" block style={{ marginBottom: "1rem" }}>
-            <Link to="/login">Login</Link>
-          </Button>
-          <Button type="default" block>
-            <Link to="/register">Register</Link>
-          </Button>
-        </Card>
-      </Col>
-    </Row>
+    <div className="home-hero">
+      <div className="home-content">
+        <Title level={1} style={{ color: '#fff' }}>Welcome to SmartHire</Title>
+        <Paragraph style={{ color: '#f0f0f0', fontSize: '18px' }}>
+          Empower your recruitment process with AI-powered insights. 
+          Upload CVs,  and get real-time feedback – all in one platform.
+        </Paragraph>
+        <Button type="primary" size="large" href="/login">
+          Launch Smart hire
+        </Button>
+      </div>
+    </div>
   );
 }

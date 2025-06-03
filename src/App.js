@@ -6,15 +6,9 @@ import Home from "./pages/Home";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
-
-import 'antd/dist/reset.css'; // Ant Design v5+
-
-
-
-
 import Layout from "./layout/Layout";
 import ProtectedRoute from "./routes/ProtectedRoute";
-
+import "antd/dist/reset.css";
 import CandidateInterviews from "./pages/Candidate/CandidateInterviews";
 import CandidateFeedback from "./pages/Candidate/CandidateFeedback";
 import ClientJobRequests from "./pages/client/ClientJobRequests";

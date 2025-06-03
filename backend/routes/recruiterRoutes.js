@@ -16,7 +16,8 @@ const path = require('path');
 // ✅ GET all uploads - For recruiter dashboard
 router.get('/uploads', protect, recruiterOnly, async (req, res) => {
   try {
-    const uploads = await CandidateUpload.find().populate('user', 'email');
+    const uploads = await CandidateUpload.find().populate('user', 'email').populate('clientId', 'email name');
+
     res.json(uploads);
   } catch (err) {
     console.error("❌ Error fetching uploads:", err);
@@ -223,6 +224,41 @@ router.post(
     }
   }
 );
+
+// 🔄 Dashboard Stats (Recruiter)
+router.get('/dashboard-stats', protect, recruiterOnly, async (req, res) => {
+  try {
+    const Job = require('../models/Job');
+    const CandidateUpload = require('../models/CandidateUpload');
+    const Interview = require('../models/Interview');
+    const User = require('../models/User');
+
+    const openJobs = await Job.countDocuments();
+    const assignedCandidates = await CandidateUpload.countDocuments();
+    const clientsCount = await User.countDocuments({ role: 'client' });
+
+    const today = new Date();
+    const nextWeek = new Date();
+    nextWeek.setDate(today.getDate() + 7);
+
+    const interviewsThisWeek = await Interview.countDocuments({
+      date: { $gte: today, $lte: nextWeek },
+    });
+
+    res.json({
+      openJobs,
+      assignedCandidates,
+      clientsCount,
+      interviewsThisWeek,
+    });
+  } catch (err) {
+    console.error("❌ Dashboard stats error:", err);
+    res.status(500).json({ message: 'Dashboard stats fetch failed' });
+  }
+});
+
+
+
 
 
 module.exports = router;

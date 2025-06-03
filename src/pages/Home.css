@@ -1,0 +1,16 @@
+.home-hero {
+  height: 100vh;
+  background: linear-gradient(to right, rgba(0, 0, 0, 0.5), rgba(15, 32, 39, 0.7)),
+              url('https://images.unsplash.com/photo-1633158829875-2e8c5f3eb4b3?auto=format&fit=crop&w=1650&q=80');
+  background-size: cover;
+  background-position: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: left;
+  padding: 0 40px;
+}
+
+.home-content {
+  max-width: 700px;
+}

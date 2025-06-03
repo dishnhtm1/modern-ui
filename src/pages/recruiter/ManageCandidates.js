@@ -1,3 +1,4 @@
+// ✅ ManageCandidates.js with auto-matched client display + referral column (updated with job fix)
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { Table, Select, Button, Tag, Modal, Typography, message } from "antd";
@@ -24,6 +25,15 @@ export default function ManageCandidates() {
         headers: { Authorization: `Bearer ${token}` },
       });
       setUploads(res.data);
+
+      // 🔁 Auto-populate selectedClients
+      const preselected = {};
+      res.data.forEach((item) => {
+        if (item.clientId) {
+          preselected[item._id] = item.clientId._id;
+        }
+      });
+      setSelectedClients(preselected);
     } catch (error) {
       console.error("Error fetching uploads:", error);
     }
@@ -61,7 +71,7 @@ export default function ManageCandidates() {
   };
 
   const handleAnalyze = async (item) => {
-    const clientId = selectedClients[item._id];
+    const clientId = selectedClients[item._id] || item.clientId?._id;
     const jobId = selectedJobs[item._id];
 
     if (!clientId || !jobId) {
@@ -145,10 +155,24 @@ export default function ManageCandidates() {
     fetchClients();
   }, []);
 
+  // 🔁 Auto-fetch jobs for referred clients
+  useEffect(() => {
+    uploads.forEach((item) => {
+      const clientId = item.clientId?._id;
+      if (clientId && !jobsByClient[clientId]) {
+        fetchJobsForClient(clientId);
+      }
+    });
+  }, [uploads]);
+
   const columns = [
     {
       title: "Email",
       dataIndex: ["user", "email"],
+    },
+    {
+      title: "Referral Client",
+      render: (_, item) => item.clientId?.email || "-",
     },
     {
       title: "CV",
@@ -180,7 +204,7 @@ export default function ManageCandidates() {
         <Select
           placeholder="Select Client"
           style={{ width: 150 }}
-          value={selectedClients[item._id] || undefined}
+          value={selectedClients[item._id] || item.clientId?._id || undefined}
           onChange={(val) => handleClientChange(item._id, val)}
         >
           {clients.map((client) => (
@@ -200,7 +224,7 @@ export default function ManageCandidates() {
           value={selectedJobs[item._id] || undefined}
           onChange={(val) => handleJobChange(item._id, val)}
         >
-          {(jobsByClient[selectedClients[item._id]] || []).map((job) => (
+          {(jobsByClient[selectedClients[item._id] || item.clientId?._id] || []).map((job) => (
             <Option key={job._id} value={job._id}>
               {job.title}
             </Option>
@@ -209,34 +233,12 @@ export default function ManageCandidates() {
       ),
     },
     {
-      title: "Feedback",
-      dataIndex: "feedback",
-      render: (text) => text || "Not yet analyzed",
-    },
-    {
-      title: "Score",
-      dataIndex: "matchScore",
-      render: (score) => score || "-",
-    },
-    {
-      title: "Status",
-      render: (text, item) =>
-        item.finalStatus === "confirmed" ? (
-          <Tag color="green">Confirmed</Tag>
-        ) : (
-          <Tag color="orange">Pending</Tag>
-        ),
-    },
-    {
       title: "Action",
-      render: (text, item) =>
-        !item.feedback ? (
-          <Button onClick={() => handleAnalyze(item)} type="primary">
-            Analyze
-          </Button>
-        ) : (
-          <Tag color="blue">Analyzed</Tag>
-        ),
+      render: (text, item) => (
+        <Button onClick={() => handleAnalyze(item)} type="primary">
+          Analyze
+        </Button>
+      ),
     },
   ];
 
