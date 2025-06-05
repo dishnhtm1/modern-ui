@@ -1,7 +1,14 @@
-// ✅ ManageCandidates.js with auto-matched client display + referral column (updated with job fix)
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { Table, Select, Button, Tag, Modal, Typography, message } from "antd";
+import {
+  Table,
+  Select,
+  Button,
+  Tag,
+  Modal,
+  Typography,
+  message,
+} from "antd";
 import moment from "moment";
 import "../../styles/recruiter.css";
 
@@ -16,28 +23,11 @@ export default function ManageCandidates() {
   const [selectedJobs, setSelectedJobs] = useState({});
   const [previews, setPreviews] = useState({});
   const [previewModal, setPreviewModal] = useState({ visible: false, data: null });
+  const [selectedClientForBulk, setSelectedClientForBulk] = useState(null);
+  const [topNResults, setTopNResults] = useState([]);
+  const [customTopN, setCustomTopN] = useState(3); // 👈 user-defined number of candidates
 
   const token = localStorage.getItem("token");
-
-  const fetchUploads = async () => {
-    try {
-      const res = await axios.get("/api/recruiter/uploads", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      setUploads(res.data);
-
-      // 🔁 Auto-populate selectedClients
-      const preselected = {};
-      res.data.forEach((item) => {
-        if (item.clientId) {
-          preselected[item._id] = item.clientId._id;
-        }
-      });
-      setSelectedClients(preselected);
-    } catch (error) {
-      console.error("Error fetching uploads:", error);
-    }
-  };
 
   const fetchClients = async () => {
     try {
@@ -47,6 +37,24 @@ export default function ManageCandidates() {
       setClients(res.data);
     } catch (err) {
       console.error("Error fetching clients:", err);
+    }
+  };
+
+  const fetchUploads = async () => {
+    try {
+      const res = await axios.get("/api/recruiter/uploads", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setUploads(res.data);
+      const preselected = {};
+      res.data.forEach((item) => {
+        if (item.clientId) {
+          preselected[item._id] = item.clientId._id;
+        }
+      });
+      setSelectedClients(preselected);
+    } catch (err) {
+      console.error("Error fetching uploads:", err);
     }
   };
 
@@ -73,7 +81,6 @@ export default function ManageCandidates() {
   const handleAnalyze = async (item) => {
     const clientId = selectedClients[item._id] || item.clientId?._id;
     const jobId = selectedJobs[item._id];
-
     if (!clientId || !jobId) {
       message.warning("Please select both client and job.");
       return;
@@ -118,44 +125,114 @@ export default function ManageCandidates() {
   };
 
   const handleSubmitFeedback = async (candidateId) => {
-    const preview = previews[candidateId];
-    if (!preview) return;
+  const preview = previews[candidateId];
+  if (!preview) return;
 
-    try {
-      await axios.post(
-        "/api/recruiter/save-feedback",
-        {
-          candidateEmail: preview.candidateEmail,
-          candidateName: preview.candidateName,
-          summary: preview.summary,
-          matchScore: preview.matchScore,
-          clientId: preview.clientId,
-          jobId: preview.jobId,
-          jobTitle: preview.jobTitle,
-        },
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
-      message.success("✅ Feedback submitted to client.");
-      setPreviews((prev) => {
-        const updated = { ...prev };
-        delete updated[candidateId];
-        return updated;
-      });
-      fetchUploads();
-    } catch (err) {
-      console.error("❌ Save feedback failed:", err);
-      message.error("❌ Save feedback failed.");
-    }
-  };
+  try {
+    await axios.post(
+      "/api/recruiter/save-feedback",
+      {
+        candidateEmail: preview.candidateEmail,
+        candidateName: preview.candidateName,
+        summary: preview.summary,
+        matchScore: preview.matchScore,
+        clientId: preview.clientId,
+        jobId: preview.jobId,
+        jobTitle: preview.jobTitle,
+      },
+      {
+        headers: { Authorization: `Bearer ${token}` },
+      }
+    );
+
+    message.success("✅ Feedback submitted to client.");
+    setPreviews((prev) => {
+      const updated = { ...prev };
+      delete updated[candidateId];
+      return updated;
+    });
+    fetchUploads();
+  } catch (err) {
+    console.error("❌ Save feedback failed:", err);
+    message.error("❌ Save feedback failed.");
+  }
+};
+
+
+  const handleSendAllFeedbacks = async () => {
+  if (topNResults.length === 0) {
+    return message.warning("No analyzed candidates to send");
+  }
+
+  try {
+    const payload = topNResults.map((item) => ({
+      candidateEmail: item.candidateEmail,
+      candidateName: item.candidateName,
+      summary: item.summary,
+      matchScore: item.matchScore,
+      clientId: item.clientId,
+      jobId: selectedJobs[item._id] || null,
+      jobTitle: "Bulk Analyzed", // or assign dynamically
+    }));
+
+    await axios.post("/api/recruiter/save-bulk-feedback", { feedbacks: payload }, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+
+    message.success("✅ All feedbacks sent to client");
+    fetchUploads();
+  } catch (err) {
+    console.error("❌ Bulk feedback error:", err);
+    message.error("Failed to send bulk feedback");
+  }
+};
+
+
+
+  const handleBulkAnalyze = async (topN = 3) => {
+  if (!selectedClientForBulk) {
+    message.error("Please select a client.");
+    return;
+  }
+
+  try {
+    const res = await axios.post(
+      "/api/recruiter/analyze-top-candidates",
+      { clientId: selectedClientForBulk, topN },
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+
+    setTopNResults(res.data);
+    message.success(`Top ${topN} candidates analyzed successfully.`);
+
+    // 👇 Automatically prepare feedback previews
+    const newPreviews = {};
+    res.data.forEach((candidate) => {
+      newPreviews[candidate.candidateId] = {
+        summary: candidate.summary,
+        matchScore: candidate.matchScore,
+        candidateId: candidate.candidateId,
+        candidateName: candidate.candidateName,
+        candidateEmail: candidate.candidateEmail,
+        clientId: candidate.clientId,
+        jobId: candidate.jobId,
+        jobTitle: candidate.jobTitle,
+      };
+    });
+
+    setPreviews((prev) => ({ ...prev, ...newPreviews }));
+  } catch (err) {
+    console.error("Bulk analysis failed:", err);
+    message.error("Failed to analyze candidates.");
+  }
+};
+
 
   useEffect(() => {
-    fetchUploads();
     fetchClients();
+    fetchUploads();
   }, []);
 
-  // 🔁 Auto-fetch jobs for referred clients
   useEffect(() => {
     uploads.forEach((item) => {
       const clientId = item.clientId?._id;
@@ -176,7 +253,7 @@ export default function ManageCandidates() {
     },
     {
       title: "CV",
-      render: (text, item) => (
+      render: (_, item) => (
         <a
           href={`http://localhost:5000/${item.cv.replace(/\\/g, "/")}`}
           target="_blank"
@@ -188,7 +265,7 @@ export default function ManageCandidates() {
     },
     {
       title: "LinkedIn",
-      render: (text, item) => (
+      render: (_, item) => (
         <a href={item.linkedin} target="_blank" rel="noopener noreferrer">
           Profile
         </a>
@@ -196,11 +273,11 @@ export default function ManageCandidates() {
     },
     {
       title: "Uploaded",
-      render: (text, item) => moment(item.createdAt).format("YYYY-MM-DD HH:mm"),
+      render: (_, item) => moment(item.createdAt).format("YYYY-MM-DD HH:mm"),
     },
     {
       title: "Client",
-      render: (text, item) => (
+      render: (_, item) => (
         <Select
           placeholder="Select Client"
           style={{ width: 150 }}
@@ -217,7 +294,7 @@ export default function ManageCandidates() {
     },
     {
       title: "Job",
-      render: (text, item) => (
+      render: (_, item) => (
         <Select
           placeholder="Select Job"
           style={{ width: 150 }}
@@ -234,7 +311,7 @@ export default function ManageCandidates() {
     },
     {
       title: "Action",
-      render: (text, item) => (
+      render: (_, item) => (
         <Button onClick={() => handleAnalyze(item)} type="primary">
           Analyze
         </Button>
@@ -245,12 +322,64 @@ export default function ManageCandidates() {
   return (
     <>
       <h2>📄 Manage Candidates</h2>
+
+      <div style={{ marginBottom: 20 }}>
+        <Button
+          type="default"
+          onClick={handleSendAllFeedbacks}
+          disabled={Object.keys(previews).length === 0}
+          style={{ marginLeft: 10 }}
+        >
+          📨 Send All AI Feedbacks
+        </Button>
+        <Select
+          placeholder="🔍 Select Client for Bulk Analysis"
+          onChange={(val) => setSelectedClientForBulk(val)}
+          style={{ width: 300, marginRight: 10 }}
+        >
+          {clients.map((client) => (
+            <Option key={client._id} value={client._id}>
+              {client.email}
+            </Option>
+          ))}
+        </Select>
+
+        <input
+          type="number"
+          min={1}
+          value={customTopN}
+          onChange={(e) => setCustomTopN(Number(e.target.value))}
+          style={{ width: 150, marginRight: 10 }}
+          placeholder="Top N Candidates"
+        />
+
+        <Button type="primary" onClick={() => handleBulkAnalyze(customTopN)}>
+          🎯 Analyze Top {customTopN} Candidates
+        </Button>
+      </div>
+
       <Table
         rowKey="_id"
         dataSource={uploads}
         columns={columns}
         pagination={{ pageSize: 5 }}
       />
+
+      {topNResults.length > 0 && (
+        <>
+          <h3 style={{ marginTop: 32 }}>⭐ Top AI Candidates</h3>
+          <Table
+            rowKey="_id"
+            dataSource={topNResults}
+            columns={[
+              { title: "Name", dataIndex: "candidateName" },
+              { title: "Score", dataIndex: "matchScore" },
+              { title: "Summary", dataIndex: "summary" },
+            ]}
+            pagination={false}
+          />
+        </>
+      )}
 
       <Modal
         title="AI Feedback Preview"

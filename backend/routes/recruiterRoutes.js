@@ -70,6 +70,63 @@ ${linkedinText}
   }
 });
 
+// ✅ Bulk analyze top N candidates from a client
+router.post('/analyze-top-candidates', protect, recruiterOnly, async (req, res) => {
+  const { clientId, topN } = req.body;
+  if (!clientId || !topN) return res.status(400).json({ message: "clientId and topN are required" });
+
+  try {
+    const uploads = await CandidateUpload.find({ clientId }).populate("user", "email");
+    const results = [];
+
+    for (const item of uploads) {
+      const filePath = path.join(__dirname, "..", item.cv);
+      const buffer = fs.readFileSync(filePath);
+      const pdfData = await pdfParse(buffer);
+      const cvText = pdfData.text;
+      const linkedinText = item.linkedin || "";
+
+      const job = await Job.findOne({ _id: item.jobId }); // if you store jobId in CandidateUpload
+
+      const prompt = `
+Analyze the following candidate's resume and LinkedIn content.
+Give a short summary and job-fit score (0-100).
+
+Resume:
+${cvText}
+
+LinkedIn:
+${linkedinText}
+      `;
+
+      const geminiRes = await axios.post(
+        `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`,
+        { contents: [{ parts: [{ text: prompt }] }] }
+      );
+
+      const output = geminiRes.data.candidates?.[0]?.content?.parts?.[0]?.text || "No summary";
+      const score = parseInt(output.match(/\b(\d{2,3})\b/)?.[1] || "75");
+
+      results.push({
+        _id: item._id,
+        candidateName: item.user?.email?.split("@")[0] || "Candidate",
+        candidateEmail: item.user?.email,
+        clientId: item.clientId,
+        matchScore: score,
+        summary: output,
+        jobId: null,         // Optional: frontend still must select job
+        jobTitle: "", 
+      });
+    }
+
+    const topCandidates = results.sort((a, b) => b.matchScore - a.matchScore).slice(0, topN);
+    res.json(topCandidates);
+  } catch (err) {
+    console.error("❌ Bulk analysis error:", err);
+    res.status(500).json({ message: "Failed to analyze candidates", error: err.message });
+  }
+});
+
 
 // ✅ Preview analysis before sending to client
 router.post('/analyze-preview', protect, recruiterOnly, async (req, res) => {
@@ -101,6 +158,41 @@ router.post('/analyze-preview', protect, recruiterOnly, async (req, res) => {
     res.status(500).json({ message: "❌ AI analysis failed." });
   }
 });
+
+// ✅ Bulk save feedbacks
+router.post('/save-bulk-feedback', protect, recruiterOnly, async (req, res) => {
+  const { feedbacks } = req.body;
+
+  if (!Array.isArray(feedbacks) || feedbacks.length === 0) {
+    return res.status(400).json({ message: 'No feedbacks provided' });
+  }
+
+  try {
+    for (const fb of feedbacks) {
+      const candidate = await User.findOne({ email: fb.candidateEmail, role: 'candidate' });
+      if (!candidate) continue;
+
+      const feedback = new Feedback({
+        candidateId: candidate._id,
+        candidateName: fb.candidateName,
+        summary: fb.summary,
+        matchScore: fb.matchScore,
+        clientId: fb.clientId,
+        jobId: fb.jobId,
+        jobTitle: fb.jobTitle,
+        reviewedBy: req.user.email
+      });
+
+      await feedback.save();
+    }
+
+    res.status(201).json({ message: '✅ All feedbacks saved successfully' });
+  } catch (err) {
+    console.error('❌ Bulk feedback error:', err.message);
+    res.status(500).json({ message: 'Failed to save bulk feedbacks' });
+  }
+});
+
 
 // ✅ Final submission of reviewed feedback to client
 router.post('/save-feedback', protect, recruiterOnly, async (req, res) => {
