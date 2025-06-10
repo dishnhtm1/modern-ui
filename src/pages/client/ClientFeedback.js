@@ -1,4 +1,7 @@
 import React, { useEffect, useState } from "react";
+import FeedbackVisualCard from "../../components/FeedbackVisualCard";
+
+
 import {
   Table,
   Button,
@@ -127,10 +130,17 @@ export default function ClientFeedback() {
       key: "matchScore",
     },
     {
-      title: "Summary",
-      dataIndex: "summary",
-      key: "summary",
-      render: (text) => text || "Not analyzed yet",
+      title: "Feedback",
+      key: "visual",
+      render: (record) => (
+        <div style={{ maxWidth: 400 }}>
+          {record.skills || record.positives || record.recommendations ? (
+            <FeedbackVisualCard feedback={record} />
+          ) : (
+            record.summary || "Not analyzed yet"
+          )}
+        </div>
+      ),
     },
     {
       title: "Status",

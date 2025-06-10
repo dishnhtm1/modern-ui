@@ -42,10 +42,19 @@ export default function ClientJobForm() {
         <Form.Item
           label="Job Description"
           name="description"
-          rules={[{ required: true, message: "Please enter the job description" }]}
+          rules={[
+            { required: true, message: "Please enter the job description" },
+            {
+              validator: (_, value) =>
+                value && value.length >= 50
+                  ? Promise.resolve()
+                  : Promise.reject(new Error("Description must be at least 50 characters")),
+            },
+          ]}
         >
-          <TextArea rows={4} placeholder="Enter job description" />
+          <TextArea rows={4} placeholder="Enter job description (min 50 characters)" />
         </Form.Item>
+
 
         <Form.Item>
           <Button type="primary" htmlType="submit" loading={loading} block>
