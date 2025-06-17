@@ -1,6 +1,7 @@
-// src/pages/Login.js
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import logo from '../assets/logo.png'; // adjust path as needed
+
 import {
   Form,
   Input,
@@ -9,8 +10,9 @@ import {
   Card,
   Row,
   Col,
-  message
+  message,
 } from "antd";
+import './Login.css'; // ✅ import the CSS
 
 const { Title } = Typography;
 
@@ -34,7 +36,6 @@ export default function Login() {
         return;
       }
 
-      // Store user and token
       localStorage.setItem("token", data.token);
       localStorage.setItem("user", JSON.stringify(data.user));
 
@@ -49,41 +50,49 @@ export default function Login() {
   };
 
   return (
-    <Row justify="center" align="middle" style={{ minHeight: "100vh", background: "#f0f2f5" }}>
-      <Col>
-        <Card style={{ padding: "2rem", width: 350 }}>
-          <Title level={3} style={{ textAlign: "center" }}>🔐 Login</Title>
+    <div className="login-container">
+      <img src={logo} alt="SmartHire Logo" className="login-logo" />
 
-          <Form layout="vertical" onFinish={onFinish}>
-            <Form.Item
-              label="Email"
-              name="email"
-              rules={[{ required: true, message: "Please enter your email" }]}
-            >
-              <Input type="email" placeholder="Email" />
-            </Form.Item>
 
-            <Form.Item
-              label="Password"
-              name="password"
-              rules={[{ required: true, message: "Please enter your password" }]}
-            >
-              <Input.Password placeholder="Password" />
-            </Form.Item>
+      <Row justify="center" align="middle" className="login-bg">
+        <Col>
+          <Card
+            className="login-card">
+            <Title level={3} style={{ textAlign: "center" }}>
+               Login
+            </Title>
 
-            <Form.Item>
-              <Button type="primary" htmlType="submit" block loading={loading}>
-                Login
-              </Button>
-            </Form.Item>
+            <Form layout="vertical" onFinish={onFinish}>
+              <Form.Item
+                label="Email"
+                name="email"
+                rules={[{ required: true, message: "Please enter your email" }]}
+              >
+                <Input type="email" placeholder="Email" />
+              </Form.Item>
 
-            <Form.Item style={{ textAlign: "center" }}>
-              <span>Don't have an account? </span>
-              <a href="/register">Register</a>
-            </Form.Item>
-          </Form>
-        </Card>
-      </Col>
-    </Row>
+              <Form.Item
+                label="Password"
+                name="password"
+                rules={[{ required: true, message: "Please enter your password" }]}
+              >
+                <Input.Password placeholder="Password" />
+              </Form.Item>
+
+              <Form.Item>
+                <Button type="primary" htmlType="submit" block loading={loading}>
+                  Login
+                </Button>
+              </Form.Item>
+
+              <Form.Item style={{ textAlign: "center" }}>
+                <span>Don't have an account? </span>
+                <a href="/register">Register</a>
+              </Form.Item>
+            </Form>
+          </Card>
+        </Col>
+      </Row>
+    </div>
   );
 }

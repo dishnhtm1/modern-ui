@@ -1,16 +1,121 @@
-.home-hero {
-  height: 100vh;
-  background: linear-gradient(to right, rgba(0, 0, 0, 0.5), rgba(15, 32, 39, 0.7)),
-              url('https://images.unsplash.com/photo-1633158829875-2e8c5f3eb4b3?auto=format&fit=crop&w=1650&q=80');
-  background-size: cover;
-  background-position: center;
+/* ===== Base Wrapper and Logo ===== */
+.home-wrapper {
   display: flex;
-  align-items: center;
-  justify-content: center;
-  text-align: left;
-  padding: 0 40px;
+  flex-direction: column;
+  background: linear-gradient(to bottom, #0f2027, #203a43, #2c5364);
+  color: white;
+  min-height: 100vh;
+  padding: 0;
 }
 
-.home-content {
-  max-width: 700px;
+.top-logo-bar {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  padding: 1rem 2rem;
+}
+.logo {
+  height: 50px;
+}
+
+/* ===== Hero Section with Background Image ===== */
+.hero-bg-section {
+  width: 100vw;                          /* Full width of viewport */
+  height: 100vh;                         /* Full height of screen */
+  background-image: url('../assets/cover.png'); /* or use style={} in JSX */
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: 100% auto;            /* ✅ FULL WIDTH, auto height (no crop) */
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  padding: 4rem 2rem;
+  background-color: #ffffff;             /* fallback background */
+}
+
+
+
+.hero-overlay {
+   /* solid white box */
+  padding: 3rem 2rem;
+  border-radius: 12px;
+  color: rgb(122, 10, 202);  /* indigo text */
+  max-width: 600px;
+  box-shadow: 0 0 0 rgba(0, 0, 0, 0.2);
+}
+
+.big-title {
+  font-size: 4.5rem !important;
+  font-weight: 900 !important; /* 1500 is not valid, max is ~900 */
+  color: rgb(141, 14, 232) !important;
+  margin-bottom: 1rem !important;
+}
+
+.hero-description {
+  font-size: 1.3rem;
+  color: indigo;
+  margin-bottom: 2rem;
+  font-weight: 500;
+}
+
+/* ===== Advertisement Banners ===== */
+.ad-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: linear-gradient(to right, #1e3c72, #2a5298);
+  padding: 2rem;
+  border-radius: 16px;
+  margin: 2rem;
+  color: white;
+  flex-wrap: wrap;
+}
+
+.ad-banner.reverse {
+  flex-direction: row-reverse;
+}
+
+.ad-image {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+}
+.ad-image img {
+  width: 100%;
+  max-width: 500px;
+  border-radius: 12px;
+  box-shadow: 0 0 12px rgba(0,0,0,0.3);
+}
+
+.ad-content {
+  flex: 1;
+  padding: 1rem 2rem;
+}
+.ad-content h2 {
+  font-size: 28px;
+  margin-bottom: 0.5rem;
+}
+.ad-content p {
+  font-size: 16px;
+  color: #ddd;
+  margin-bottom: 1rem;
+}
+.top-logo-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem 2rem;
+  height: 80px; /* You can make this even smaller if you want */
+  overflow: hidden;
+}
+
+.top-right-buttons {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+.logo {
+  height: 80px; /* Keep the actual height small */
+  transform: scale(1.8); /* Visually make it look bigger */
+  transform-origin: left center; /* Scale from left so it doesn’t break layout */
 }
