@@ -1,10 +1,11 @@
+// backend/routes/candidateRoutes.js
 const express = require('express');
 const router = express.Router();
 const multer = require('multer');
 const { protect, authorizeRoles } = require('../middleware/authMiddleware');
 const Feedback = require('../models/Feedback');
-const User = require('../models/User'); // ✅ Add this
-const Job = require('../models/Job');   // ✅ And this
+const User = require('../models/User');
+const Job = require('../models/Job');
 const { uploadCandidateData } = require('../controllers/candidateController');
 
 // Multer config
@@ -28,7 +29,6 @@ router.get('/interviews', protect, authorizeRoles('candidate'), async (req, res)
       sentToCandidate: true
     });
 
-    // Enrich with client email and job title
     const enriched = await Promise.all(
       feedbacks.map(async (fb) => {
         const client = await User.findById(fb.clientId).select('email');
@@ -38,6 +38,9 @@ router.get('/interviews', protect, authorizeRoles('candidate'), async (req, res)
           ...fb._doc,
           clientName: client?.email || 'Unknown Client',
           jobTitle: job?.title || 'Unknown Job',
+          interviewType: fb.interviewType || '',
+          interviewDate: fb.interviewDate || '',
+          interviewDetails: fb.interviewDetails || '', // ✅ NEW FIELD
         };
       })
     );
@@ -57,7 +60,6 @@ router.get('/feedback', protect, authorizeRoles('candidate'), async (req, res) =
       sentFinalFeedbackToCandidate: true
     });
 
-    // Optional: enrich with job/client details
     const enriched = await Promise.all(
       feedbacks.map(async (fb) => {
         const client = await User.findById(fb.clientId).select('email');

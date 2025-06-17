@@ -105,7 +105,7 @@ export default function ReviewFeedback() {
           <Tag icon={<CheckCircleOutlined />} color="green">Sent</Tag>
         ) : (
           <Button icon={<SendOutlined />} type="primary" onClick={() => handleSendToCandidate(record._id)}>
-            Send to Candidate
+            Submit to Candidate
           </Button>
         )
       ) : "-"
@@ -143,7 +143,7 @@ export default function ReviewFeedback() {
                   <Tag icon={<CheckCircleOutlined />} color="green">Final feedback sent</Tag>
                 ) : (
                   <Button icon={<SendOutlined />} type="default" onClick={() => handleSendFinalFeedback(record._id)}>
-                    Send Final Feedback
+                    Submit Final Feedback
                   </Button>
                 )}
               </div>

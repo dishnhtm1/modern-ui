@@ -49,17 +49,30 @@ export default function CandidateFeedback() {
                 title={
                   <>
                     <Text strong>Job Title:</Text> {item.jobTitle || "N/A"}
+                    <br />
+                    <Text strong>Client:</Text> {item.clientName || "Unknown Client"}
                   </>
                 }
                 bordered
               >
                 <p>
                   <Text strong>Status:</Text>{" "}
-                  {item.status === "accepted" ? "✅ Accepted" : item.status === "rejected" ? "❌ Rejected" : "⏳ Pending"}
+                  {item.status === "accepted"
+                    ? "✅ Accepted"
+                    : item.status === "rejected"
+                    ? "❌ Rejected"
+                    : "⏳ Pending"}
                 </p>
 
                 {item.finalDecision && item.sentFinalFeedbackToCandidate && (
-                  <div style={{ marginTop: "10px", background: "#fafafa", padding: "12px", borderRadius: "6px" }}>
+                  <div
+                    style={{
+                      marginTop: "10px",
+                      background: "#fafafa",
+                      padding: "12px",
+                      borderRadius: "6px",
+                    }}
+                  >
                     <p>
                       <Text strong>🎯 Final Decision:</Text>{" "}
                       {item.finalDecision === "confirmed"

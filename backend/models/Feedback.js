@@ -9,29 +9,14 @@ const feedbackSchema = new mongoose.Schema({
   summary: { type: String, required: true },
   matchScore: { type: Number },
 
-  // 🎯 For visual feedback
-  skills: {
-    type: Map,
-    of: Number,
-    default: {},
-  },
-  positives: {
-    type: [String],
-    default: [],
-  },
-  negatives: {
-    type: [String],
-    default: [],
-  },
-  recommendations: {
-    type: [String],
-    default: [],
-  },
+  skills: { type: Object, default: {} },
+  positives: { type: [String], default: [] },
+  negatives: { type: [String], default: [] },
+  recommendations: { type: [String], default: [] },
 
   reviewedBy: { type: String },
   additionalFeedback: { type: String },
 
-  // 🗓️ Status & Interview
   status: {
     type: String,
     enum: ['pending', 'accepted', 'rejected'],
@@ -39,8 +24,8 @@ const feedbackSchema = new mongoose.Schema({
   },
   interviewDate: { type: Date },
   interviewType: { type: String },
+  interviewDetails: { type: String, default: "" }, // ✅ Added field
 
-  // ✅ Final decision
   finalDecision: {
     type: String,
     enum: ['confirmed', 'rejected', ''],
@@ -48,11 +33,9 @@ const feedbackSchema = new mongoose.Schema({
   },
   finalMessage: { type: String, default: "" },
 
-  // 🔁 Status flags
   sentToCandidate: { type: Boolean, default: false },
   sentFinalFeedbackToCandidate: { type: Boolean, default: false },
 
-  // 📅 Timestamps
   createdAt: { type: Date, default: Date.now }
 });
 

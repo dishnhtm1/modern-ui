@@ -37,7 +37,7 @@ router.get('/feedback', protect, authorizeRoles('client'), async (req, res) => {
 
 // POST /api/client/respond-feedback
 router.post('/respond-feedback', protect, authorizeRoles('client'), async (req, res) => {
-  const { feedbackId, status, interviewDate, interviewType } = req.body;
+  const { feedbackId, status, interviewDate, interviewType, interviewDetails } = req.body;
 
   try {
     const feedback = await Feedback.findById(feedbackId);
@@ -46,18 +46,22 @@ router.post('/respond-feedback', protect, authorizeRoles('client'), async (req, 
     }
 
     feedback.status = status;
+
     if (status === 'accepted') {
       feedback.interviewDate = interviewDate;
       feedback.interviewType = interviewType;
+      feedback.interviewDetails = interviewDetails; // ✅ NEW LINE
     }
+
     await feedback.save();
 
-    res.status(200).json({ message: "Feedback updated successfully" });
+    res.status(200).json({ message: "✅ Feedback updated successfully" });
   } catch (err) {
     console.error("❌ Feedback update error:", err);
     res.status(500).json({ message: "Server error" });
   }
 });
+
 
 router.patch('/final-decision/:feedbackId', protect, authorizeRoles('client'), async (req, res) => {
   const { status, message } = req.body;

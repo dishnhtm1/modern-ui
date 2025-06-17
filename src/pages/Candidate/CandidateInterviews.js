@@ -1,3 +1,4 @@
+// frontend/src/pages/MyInterviewPage.js
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { Table, Typography, Result } from "antd";
@@ -49,6 +50,12 @@ export default function MyInterviewPage() {
       key: "interviewDate",
       render: (date) =>
         date ? new Date(date).toLocaleDateString() : "-",
+    },
+    {
+      title: "Details",
+      dataIndex: "interviewDetails",
+      key: "interviewDetails",
+      render: (text) => text || "-",
     },
     {
       title: "Status",

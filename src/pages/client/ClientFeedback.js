@@ -1,7 +1,4 @@
 import React, { useEffect, useState } from "react";
-import FeedbackVisualCard from "../../components/FeedbackVisualCard";
-
-
 import {
   Table,
   Button,
@@ -12,9 +9,10 @@ import {
   Typography,
   Space,
   Divider,
+  Card,
 } from "antd";
 import axios from "axios";
-import moment from "moment";
+import FeedbackVisualCard from "../../components/FeedbackVisualCard";
 
 const { Title } = Typography;
 const { Option } = Select;
@@ -34,12 +32,14 @@ export default function ClientFeedback() {
       });
       setFeedbacks(res.data);
 
-      // ✅ Initialize responseInputs with final decision and message
       const initialInputs = {};
       res.data.forEach((f) => {
         initialInputs[f._id] = {
           finalDecision: f.finalDecision || "",
           finalMessage: f.finalMessage || "",
+          interviewDate: f.interviewDate || "",
+          type: f.interviewType || "",
+          interviewDetails: f.interviewDetails || "",
         };
       });
       setResponseInputs(initialInputs);
@@ -62,10 +62,13 @@ export default function ClientFeedback() {
   };
 
   const handleSubmit = async (id, status) => {
-    const { interviewDate, type } = responseInputs[id] || {};
+    const { interviewDate, type, interviewDetails } = responseInputs[id] || {};
 
-    if (status === "accepted" && (!interviewDate || !type)) {
-      return message.warning("Please provide interview date and type.");
+    if (
+      status === "accepted" &&
+      (!interviewDate || !type || !interviewDetails)
+    ) {
+      return message.warning("Please fill date, type and interview details.");
     }
 
     try {
@@ -76,6 +79,7 @@ export default function ClientFeedback() {
           status,
           interviewDate,
           interviewType: type,
+          interviewDetails,
         },
         {
           headers: { Authorization: `Bearer ${token}` },
@@ -130,19 +134,6 @@ export default function ClientFeedback() {
       key: "matchScore",
     },
     {
-      title: "Feedback",
-      key: "visual",
-      render: (record) => (
-        <div style={{ maxWidth: 400 }}>
-          {record.skills || record.positives || record.recommendations ? (
-            <FeedbackVisualCard feedback={record} />
-          ) : (
-            record.summary || "Not analyzed yet"
-          )}
-        </div>
-      ),
-    },
-    {
       title: "Status",
       dataIndex: "status",
       key: "status",
@@ -158,9 +149,7 @@ export default function ClientFeedback() {
       key: "action",
       render: (_, item) =>
         !item.status || item.status === "pending" ? (
-          <Button type="primary" onClick={() => handleResponseChange(item._id, "open", true)}>
-            Respond
-          </Button>
+          <span style={{ color: "#fa8c16" }}>Awaiting Response</span>
         ) : (
           <span>{item.status === "accepted" ? "✅ Accepted" : "❌ Rejected"}</span>
         ),
@@ -169,10 +158,8 @@ export default function ClientFeedback() {
 
   return (
     <div style={{ padding: 24 }}>
-      <Title level={3}>🧠 AI Analyzed Candidates - Review & Final Decision</Title>
-      <p style={{ marginBottom: 24 }}>
-        Review candidates, schedule interviews, and give your final decision to the recruiter.
-      </p>
+      <Title level={3}>🧠 AI Analyzed Candidates – Review & Respond</Title>
+      <p>Review analyzed candidates, schedule interviews, and send your final decision to recruiters.</p>
 
       <Table
         columns={columns}
@@ -181,21 +168,34 @@ export default function ClientFeedback() {
         rowKey="_id"
         expandable={{
           expandedRowRender: (record) => (
-            <div style={{ background: "#fafafa", padding: "20px" }}>
+            <Card style={{ background: "#f9f9f9", margin: "10px 0" }}>
+              <Title level={5}>📋 Feedback Summary – {record.candidateName}</Title>
+              <FeedbackVisualCard feedback={record} />
+
               {!record.status || record.status === "pending" ? (
-                <>
+                <div style={{ marginTop: 24 }}>
                   <Divider orientation="left">📅 Interview Scheduling</Divider>
-                  <Space direction="vertical">
+                  <Space direction="vertical" style={{ width: "100%" }}>
                     <DatePicker
-                      placeholder="Select interview date"
+                      placeholder="Interview Date"
+                      style={{ width: 300 }}
                       onChange={(date, dateStr) =>
                         handleResponseChange(record._id, "interviewDate", dateStr)
                       }
                     />
                     <Input
-                      placeholder="Interview type (e.g., Online)"
+                      placeholder="Interview Type (e.g. Zoom)"
+                      value={responseInputs[record._id]?.type}
                       onChange={(e) =>
                         handleResponseChange(record._id, "type", e.target.value)
+                      }
+                    />
+                    <TextArea
+                      rows={3}
+                      placeholder="Interview Details (e.g. Zoom link, meeting location)"
+                      value={responseInputs[record._id]?.interviewDetails}
+                      onChange={(e) =>
+                        handleResponseChange(record._id, "interviewDetails", e.target.value)
                       }
                     />
                     <Space>
@@ -213,19 +213,19 @@ export default function ClientFeedback() {
                       </Button>
                     </Space>
                   </Space>
-                </>
+                </div>
               ) : record.finalDecision ? (
-                <>
+                <div style={{ marginTop: 24 }}>
                   <Divider orientation="left">📌 Final Decision</Divider>
-                  <p><strong>Final Decision:</strong> {record.finalDecision === "confirmed" ? "✅ Confirmed" : "❌ Rejected"}</p>
+                  <p><strong>Decision:</strong> {record.finalDecision === "confirmed" ? "✅ Confirmed" : "❌ Rejected"}</p>
                   <p><strong>Message:</strong> {record.finalMessage || "No message provided."}</p>
-                </>
+                </div>
               ) : (
-                <>
+                <div style={{ marginTop: 24 }}>
                   <Divider orientation="left">📌 Final Decision</Divider>
                   <Space direction="vertical" style={{ width: "100%" }}>
                     <Select
-                      placeholder="Select decision"
+                      placeholder="Select final decision"
                       style={{ width: 250 }}
                       value={responseInputs[record._id]?.finalDecision}
                       onChange={(val) =>
@@ -250,9 +250,9 @@ export default function ClientFeedback() {
                       Submit Final Decision
                     </Button>
                   </Space>
-                </>
+                </div>
               )}
-            </div>
+            </Card>
           ),
         }}
         pagination={{ pageSize: 5 }}

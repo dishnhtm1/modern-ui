@@ -115,10 +115,21 @@ export default function ManageCandidates() {
   };
 
   const handleSendAllFeedbacks = async () => {
-    if (topNResults.length === 0) return message.warning("No analyzed candidates.");
+  if (topNResults.length === 0) {
+    return message.warning("No analyzed candidates.");
+  }
 
+  try {
     const feedbacks = topNResults.map((item) => ({
-      ...item,
+      candidateEmail: item.candidateEmail,
+      candidateName: item.candidateName,
+      summary: item.summary,
+      matchScore: item.matchScore,
+      skills: item.skills || {},
+      positives: item.positives || [],
+      negatives: item.negatives || [],
+      recommendations: item.recommendations || [],
+      clientId: item.clientId,
       jobId: item.jobId,
       jobTitle: item.jobTitle,
     }));
@@ -128,8 +139,15 @@ export default function ManageCandidates() {
     });
 
     message.success("✅ All feedbacks submitted.");
-    fetchUploads();
-  };
+    setTopNResults([]);   // clear analyzed feedbacks
+    setPreviews({});      // optionally clear previews too
+    fetchUploads();       // refresh table
+
+  } catch (err) {
+    console.error("❌ Bulk feedback save failed:", err);
+    message.error("❌ Failed to submit bulk feedback.");
+  }
+};
 
   const handleBulkAnalyze = async () => {
   if (!selectedClientForBulk || !selectedJobForBulk) {
@@ -176,6 +194,9 @@ export default function ManageCandidates() {
       ...prev,
       ...bulkPreviews
     }));
+
+
+    setTopNResults(res.data);
 
     // ✅ Open first candidate in modal
     const firstCandidateId = res.data[0]?.candidateId;
@@ -321,10 +342,10 @@ export default function ManageCandidates() {
         <Button
           type="default"
           onClick={handleSendAllFeedbacks}
-          disabled={Object.keys(previews).length === 0}
+          disabled={topNResults.length === 0}
           style={{ marginLeft: 10 }}
         >
-          📨 Send All AI Feedbacks
+          📨 Submit All AI Feedbacks
         </Button>
       </div>
 

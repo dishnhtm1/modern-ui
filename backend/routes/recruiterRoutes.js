@@ -288,28 +288,53 @@ router.post("/save-bulk-feedback", protect, recruiterOnly, async (req, res) => {
   try {
     const { feedbacks } = req.body;
 
-    for (const fb of feedbacks) {
-      const newFeedback = new Feedback({
-        candidateEmail: fb.candidateEmail,
-        candidateName: fb.candidateName,
-        summary: fb.summary,
-        matchScore: fb.matchScore,
-        skills: fb.skills || {},
-        positives: fb.positives || [],
-        negatives: fb.negatives || [],
-        recommendations: fb.recommendations || [],
-        clientId: fb.clientId,
-        jobId: fb.jobId,
-        jobTitle: fb.jobTitle,
-      });
+    const saved = [];
+    const skipped = [];
 
-      await newFeedback.save();
+    for (const fb of feedbacks) {
+      try {
+        const user = await User.findOne({ email: fb.candidateEmail });
+
+        if (!user || user.role !== "candidate") {
+          console.warn(`⚠️ Skipping: ${fb.candidateEmail} is not a candidate`);
+          skipped.push(fb.candidateEmail);
+          continue;
+        }
+
+        const newFeedback = new Feedback({
+          candidateId: user._id,
+          candidateEmail: fb.candidateEmail,
+          candidateName: fb.candidateName,
+          summary: fb.summary,
+          matchScore: fb.matchScore,
+          skills: fb.skills || {},
+          positives: fb.positives || [],
+          negatives: fb.negatives || [],
+          recommendations: fb.recommendations || [],
+          clientId: fb.clientId,
+          jobId: fb.jobId,
+          jobTitle: fb.jobTitle,
+          reviewedBy: req.user.email,
+        });
+
+        await newFeedback.save();
+        saved.push(fb.candidateEmail);
+
+      } catch (innerErr) {
+        console.error(`❌ Failed saving feedback for ${fb.candidateEmail}:`, innerErr.message);
+        skipped.push(fb.candidateEmail);
+      }
     }
 
-    res.status(201).json({ message: "Bulk feedback saved" });
+    res.status(201).json({
+      message: "✅ Bulk feedback processed.",
+      saved,
+      skipped,
+    });
+
   } catch (err) {
-    console.error("Save bulk feedback error:", err);
-    res.status(500).json({ message: "Saving bulk feedback failed" });
+    console.error("❌ Save bulk feedback error:", err);
+    res.status(500).json({ message: "❌ Saving bulk feedback failed.", error: err.message });
   }
 });
 
@@ -330,10 +355,31 @@ router.post('/save-feedback', protect, recruiterOnly, async (req, res) => {
   } = req.body;
 
   try {
-    const candidate = await User.findOne({ email: candidateEmail, role: 'candidate' });
+    console.log("🔍 Incoming feedback submission:");
+    console.log({
+      candidateEmail,
+      candidateName,
+      summary,
+      matchScore,
+      clientId,
+      jobId,
+      jobTitle,
+      skills,
+      positives,
+      negatives,
+      recommendations
+    });
+
+    const candidate = await User.findOne({ email: candidateEmail });
 
     if (!candidate) {
-      return res.status(404).json({ message: 'Candidate not found' });
+      console.error("❌ No user found with this email");
+      return res.status(404).json({ message: 'No user found with this email.' });
+    }
+
+    if (candidate.role !== 'candidate') {
+      console.error(`❌ User found but has invalid role: ${candidate.role}`);
+      return res.status(400).json({ message: `User is not a candidate. Found role: ${candidate.role}` });
     }
 
     const feedback = new Feedback({
@@ -352,13 +398,15 @@ router.post('/save-feedback', protect, recruiterOnly, async (req, res) => {
     });
 
     await feedback.save();
+    console.log("✅ Feedback saved successfully");
     res.status(201).json({ message: "✅ Feedback sent to client." });
 
   } catch (err) {
-    console.error("❌ Feedback save error:", err.message);
-    res.status(500).json({ message: "❌ Failed to save feedback." });
+    console.error("❌ Feedback save error:", err); // full error stack
+    res.status(500).json({ message: "❌ Failed to save feedback.", error: err.message });
   }
 });
+
 
 
 router.get('/client-jobs/:clientId', protect, recruiterOnly, async (req, res) => {
