@@ -53,7 +53,8 @@ export default function Home() {
 
 
   return (
-    <div className="home-bg-wrapper" style={{ backgroundImage: `url(${smarthireBg})` }}>
+    <div className="home-bg-wrapper" style={{ backgroundImage: `url(${bgImage})` }}>
+
       <div className="home-wrapper">
         {/* Logo Bar */}
         <div className="top-logo-bar">
